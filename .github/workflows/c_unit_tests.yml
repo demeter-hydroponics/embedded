@@ -1,0 +1,20 @@
+name: C Source Unit Tests
+
+on:
+  push:
+    branches:
+      - main 
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  c-source-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up system
+        run: python3 scripts/setup.py --skip-upgrade
+      - name: Run C source Unit Tests
+        run: python3 scripts/test_c_source.py
