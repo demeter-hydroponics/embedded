@@ -1,0 +1,54 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Build C Source",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/test_c_source.py",
+            "args": [],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Debug C Source Tests",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/c_source/test/build/c_source_tests",  
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}/c_source/test/build",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",  
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "",  
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "name": "Debug Python Source Unit Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/test_python_source.py",
+            "args": [],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Build and Debug C Source",
+            "configurations": [
+                "Build C Source",
+                "Debug C Source Tests"
+            ]
+        }
+    ]
+}

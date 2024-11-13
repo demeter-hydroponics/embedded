@@ -1,0 +1,13 @@
+{
+    "apt": [
+        "git",
+        "clang-format",
+        "clang-tidy",
+        "build-essential",
+        "gdb",
+        "doxygen",
+        "cmake",
+        "cpputest",
+        "clang-tidy"
+    ]
+}
