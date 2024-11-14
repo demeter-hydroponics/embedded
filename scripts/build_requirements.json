@@ -1,13 +1,25 @@
 {
     "apt": [
         "git",
+        "wget",
+        "flex",
+        "bison",
+        "gperf",
+        "python3",
+        "python3-pip",
+        "python3-venv",
+        "cmake",
+        "ninja-build",
+        "ccache",
+        "libffi-dev",
+        "libssl-dev",
+        "dfu-util",
+        "libusb-1.0-0",
         "clang-format",
         "clang-tidy",
         "build-essential",
         "gdb",
         "doxygen",
-        "cmake",
-        "cpputest",
-        "clang-tidy"
+        "cpputest"
     ]
 }
