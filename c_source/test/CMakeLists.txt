@@ -2,40 +2,44 @@ cmake_minimum_required(VERSION 3.14)
 
 set(This c_source_tests)
 
-set(BINARY ${CMAKE_PROJECT_NAME})
-
 project(${This} C CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+# Specify the C and C++ standards
+set(CMAKE_CXX_STANDARD 14) # Ensure at least C++14
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Og -g -Werror -Wextra -Wall -pedantic -pedantic-errors -Wfloat-equal -Wredundant-decls  -Wswitch-default  -pedantic -Wconversion")
+# Compiler flags
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Og -g -Werror -Wextra -Wall -pedantic -pedantic-errors -Wfloat-equal -Wredundant-decls -Wswitch-default -pedantic -Wconversion")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Og -g -Werror -Wextra -Wall")
 
 add_definitions(-DUNIT_TEST)
 
+# Include directories for your source code
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../inc)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../inc/driver)
 
-# add the sources in ../src
-file(GLOB_RECURSE C_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../src/*.c)
+# Add the sources from ../src
+file(GLOB_RECURSE CPP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../src/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/../src/driver/**.c)
 
-add_library(MAIN_SOURCES_LIB ${C_SOURCES})
-target_compile_options(MAIN_SOURCES_LIB PRIVATE -pedantic -pedantic-errors -Wfloat-equal -Wredundant-decls  -Wswitch-default  -pedantic -Wconversion)
+add_library(MAIN_SOURCES_LIB ${CPP_SOURCES})
+target_compile_options(MAIN_SOURCES_LIB PRIVATE -pedantic -pedantic-errors -Wfloat-equal -Wredundant-decls -Wswitch-default -pedantic -Wconversion)
 
+# Define the libs directory variable
+set(LIBS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../libs)
 
-# Define CPPUTEST_HOME
-set(CPPUTEST_HOME /usr)
-message(STATUS "Using CppUTest home: ${CPPUTEST_HOME}")
-set(CPPUTEST_INCLUDE_DIRS ${CPPUTEST_HOME}/include)
-set(CPPUTEST_LIBRARIES ${CPPUTEST_HOME}/lib)
-set(CPPUTEST_LDFLAGS CppUTest CppUTestExt)
+# Add GoogleTest Submodule with explicit binary directory
+add_subdirectory(${LIBS_DIR}/googletest ${CMAKE_BINARY_DIR}/googletest-build)
 
-include_directories(${CPPUTEST_INCLUDE_DIRS})
-link_directories(${CPPUTEST_LIBRARIES})
-
-# get all the test sources
+# Get all the test sources
 file(GLOB TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
-add_executable(${This} ${TEST_SOURCES})
-target_link_libraries(${This} ${CPPUTEST_LDFLAGS} MAIN_SOURCES_LIB)
+# Create the test executable
+add_executable(${This} main.cpp ${TEST_SOURCES})
+
+# Link the test executable with GoogleTest, GoogleMock, and pthread
+target_link_libraries(${This} gmock gmock_main gtest pthread MAIN_SOURCES_LIB)
+
+# Enable GoogleTest CMake support
+include(GoogleTest)
+gtest_discover_tests(${This})

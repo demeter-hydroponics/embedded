@@ -1,3 +1,6 @@
 [submodule "libs/esp-idf"]
 	path = libs/esp-idf
 	url = git@github.com:espressif/esp-idf.git
+[submodule "libs/googletest"]
+	path = libs/googletest
+	url = https://github.com/google/googletest.git
