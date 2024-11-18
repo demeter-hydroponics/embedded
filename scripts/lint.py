@@ -2,7 +2,7 @@ import os
 from util import *
 
 INCLUDE_DIRS = [
-    "c_source/inc",
+    "c_source/inc/driver",
 ]
 
 # Add additional strict checks for clang-tidy
@@ -20,7 +20,7 @@ STRICT_CHECKS = [
 ]
 
 # Define checks to be excluded
-EXCLUDED_CHECKS = []
+EXCLUDED_CHECKS = ["modernize-use-trailing-return-type"]
 
 # Build include directories string for the clang-tidy command
 INCLUDE_DIR_STR = " -I" + " -I".join(INCLUDE_DIRS)
@@ -38,7 +38,9 @@ def run_clang_tidy(file, checks, include_dir_str):
 
 
 def main():
-    c_files = get_files_with_extensions((".c"), ["build", "test"], base_path="c_source")
+    c_files = get_files_with_extensions(
+        (".cpp"), ["build", "test"], base_path="c_source"
+    )
 
     # Convert the list of strict checks and exclusions to a comma-separated string
     checks = ",".join(STRICT_CHECKS + [f"-{check}" for check in EXCLUDED_CHECKS])

@@ -1,6 +1,6 @@
-// test/main.cpp
-#include "CppUTest/CommandLineTestRunner.h"
+#include <gtest/gtest.h>
 
-IMPORT_TEST_GROUP(dummy_test);
-
-int main(int ac, char **av) { return CommandLineTestRunner::RunAllTests(ac, av); }
+int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
