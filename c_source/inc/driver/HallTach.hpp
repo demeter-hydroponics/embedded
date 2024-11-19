@@ -38,6 +38,7 @@ class HallTach {
      * @param frequency The frequency of the hall tach signal (in Hz)
      * @param currentTime The current time in microseconds
      * @return HallTach::State The state of the hall tach signal
+     *
      */
     State getFrequency(float &frequency, utime_t currentTime);
 
