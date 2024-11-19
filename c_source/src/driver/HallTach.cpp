@@ -57,6 +57,7 @@ HallTach::State HallTach::logHallTachToggle(HallTach::TachEdge edge, utime_t tim
 HallTach::State HallTach::getFrequency(float &frequency, utime_t currentTime) {
     constexpr float us_to_s = 1.0F / 1000000.0F;
     const float dt_s = (static_cast<float>(currentTime) - static_cast<float>(lastTime_)) * us_to_s;
+    const bool illegal_dt = dt_s < 0.0F;
 
     float max_allowable_dt_s = 0.0F;
     if (min_freq_ > 0.0F) {
@@ -73,9 +74,8 @@ HallTach::State HallTach::getFrequency(float &frequency, utime_t currentTime) {
         case State::VALID:
             if (past_allowable_dt) {
                 state_ = State::NOT_VALID_NO_CHANGE;
-                frequency_ = 0.0F;
                 frequency = 0.0F;
-            } else if ((lastTime_ > currentTime) && min_freq_enabled) {
+            } else if (illegal_dt && min_freq_enabled) {
                 state_ = State::NOT_VALID_UNINITIALIZED;
             } else {
                 frequency = frequency_;
