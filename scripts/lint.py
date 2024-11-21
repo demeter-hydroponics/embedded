@@ -3,6 +3,7 @@ from util import *
 
 INCLUDE_DIRS = [
     "c_source/inc/driver",
+    "c_source/HAL",
 ]
 
 # Add additional strict checks for clang-tidy
