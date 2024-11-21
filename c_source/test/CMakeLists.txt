@@ -19,6 +19,7 @@ add_definitions(-DUNIT_TEST)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../inc)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../inc/driver)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../HAL)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/mocks)
 
 # Add the sources from ../src
 file(GLOB_RECURSE CPP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../src/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/../src/driver/**.c)
