@@ -1,9 +1,9 @@
-#ifndef ADC_HPP
-#define ADC_HPP
+#ifndef HAL_ADC_HPP
+#define HAL_ADC_HPP
 
 #include <stdint.h>
 
-class ADC {
+class HAL_ADC {
    public:
     enum class ErrorCode {
         NO_ERROR,
@@ -19,3 +19,5 @@ class ADC {
      */
     virtual ErrorCode readV(float& voltage, uint8_t channel) = 0;
 };
+
+#endif  // ADC_HPP
