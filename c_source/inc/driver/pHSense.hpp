@@ -1,7 +1,7 @@
 #ifndef PH_SENSE_HPP
 #define PH_SENSE_HPP
 
-#include "ADC.hpp"
+#include "HAL_ADC.hpp"
 #include "stdint.h"
 
 class pHSense {
@@ -41,12 +41,11 @@ class pHSense {
     HAL_ADC& adc_;
     uint8_t channel_;
 
-    float voltage_;
-
     float gain_;
     float offset_;
 
     HAL_ADC::ErrorCode adc_error_;
+    float voltage_;
 };
 
 #endif
