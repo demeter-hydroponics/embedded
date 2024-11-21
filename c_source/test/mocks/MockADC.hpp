@@ -1,7 +1,7 @@
 #ifndef MOCK_ADC_HPP
 #define MOCK_ADC_HPP
 
-#include "ADC.hpp"
+#include "HAL_ADC.hpp"
 #include "gmock/gmock.h"
 
 class MockADC : public HAL_ADC {

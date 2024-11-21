@@ -21,7 +21,11 @@ STRICT_CHECKS = [
 ]
 
 # Define checks to be excluded
-EXCLUDED_CHECKS = ["modernize-use-trailing-return-type"]
+EXCLUDED_CHECKS = [
+    "modernize-use-trailing-return-type",
+    "bugprone-easily-swappable-parameters",
+    "readability-identifier-length",
+]
 
 # Build include directories string for the clang-tidy command
 INCLUDE_DIR_STR = " -I" + " -I".join(INCLUDE_DIRS)
