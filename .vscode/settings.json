@@ -4,6 +4,5 @@
         "*.tcc": "c",
         "compare": "c",
         "numeric": "c",
-        "cmath": "c"
     }
 }
