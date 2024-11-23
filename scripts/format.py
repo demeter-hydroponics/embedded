@@ -3,7 +3,13 @@ import subprocess
 import sys
 import argparse
 
-EXCLUDE_DIRS = [".vscode", "build", "libs", "demeter-embedded-venv"]
+EXCLUDE_DIRS = [
+    ".vscode",
+    "build",
+    "libs",
+    "demeter-embedded-venv",
+    "managed_components",
+]
 EMBEDDED_EXTENSIONS = (".c", ".h", ".cpp", ".hpp")
 PYTHON_EXTENSION = ".py"
 

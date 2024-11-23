@@ -4,5 +4,12 @@
         "*.tcc": "c",
         "compare": "c",
         "numeric": "c",
+        "bitset": "cpp",
+        "string_view": "cpp",
+        "regex": "cpp",
+        "array": "cpp",
+        "string": "cpp",
+        "ranges": "cpp",
+        "span": "cpp"
     }
 }
