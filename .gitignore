@@ -58,3 +58,4 @@ __pycache__/
 .pytest_cache/
 
 demeter-embedded-venv/
+managed_components/

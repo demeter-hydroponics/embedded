@@ -7,6 +7,27 @@ project_paths = {
 }
 
 
+def create_config_file(private_dir: str):
+    if not os.path.exists(private_dir):
+        raise Exception(f"Private directory {private_dir} does not exist.")
+
+    # if a file called config_private.h exists, copy its contents to config.h
+    config_private_path = os.path.join(private_dir, "config_private.h")
+    config_default_path = os.path.join(private_dir, "config_default.h")
+    config_path = os.path.join(private_dir, "config.h")
+
+    if os.path.exists(config_private_path):
+        with open(config_private_path, "r") as private_file:
+            private_contents = private_file.read()
+            with open(config_path, "w") as config_file:
+                config_file.write(private_contents)
+    else:
+        with open(config_default_path, "r") as default_file:
+            default_contents = default_file.read()
+            with open(config_path, "w") as config_file:
+                config_file.write(default_contents)
+
+
 def main(args):
     # confirm esp-idf is sourced
     esp_idf_path = os.environ.get("IDF_PATH")
@@ -14,6 +35,10 @@ def main(args):
         raise Exception("IDF_PATH is not set. Run `get_demeter_esp_idf` to set it.")
 
     proj_root = os.getcwd()
+
+    # create the config file
+    private_dir = os.path.join(proj_root, "private")
+    create_config_file(private_dir)
 
     paths = []
 
@@ -54,13 +79,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--monitor", help="Monitor the serial output of the ESP32", action="store_true"
     )
-    parser.add_argument(
-        "--port", help="Port to flash/monitor the ESP32 on", default="/dev/ttyUSB0"
-    )
+
+    # add an arg to specify the port
+    parser.add_argument("--port", help="Serial port for the ESP32")
 
     args = parser.parse_args()
 
     # if flash or monitor are defined, ensure that there is a port defined
-    if args.flash or args.monitor and not args.port:
+    if (args.flash or args.monitor) and (args.port is None):
         raise Exception("Port must be defined to flash or monitor the ESP32")
     main(args)
