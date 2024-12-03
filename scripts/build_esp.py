@@ -1,5 +1,6 @@
 import os
 import argparse
+from build_protobuf import build_protobuf
 
 project_paths = {
     "node-controller": "controllers/node-controller",
@@ -41,6 +42,8 @@ def main(args):
     create_config_file(private_dir)
 
     paths = []
+
+    build_protobuf()
 
     if args.project == "all":
         # get the current working directory
