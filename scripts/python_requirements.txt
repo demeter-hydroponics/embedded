@@ -4,3 +4,5 @@ pylint
 numpy
 websockets
 matplotlib
+protobuf 
+grpcio-tools

@@ -1,5 +1,6 @@
 import os
 import argparse
+from build_protobuf import build_protobuf
 
 TESTS_EXE_NAME = "c_source_tests"
 
@@ -8,6 +9,7 @@ C_SOURCE_TESTS_DIR = "c_source"
 
 def main(debug):
     # chdir to "application"
+    build_protobuf()
     os.chdir(C_SOURCE_TESTS_DIR)
     os.chdir("test")
 
