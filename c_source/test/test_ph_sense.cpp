@@ -45,3 +45,21 @@ TEST(phSenseTest, TestAdcVoltageToPhConversion) {
 
     EXPECT_FLOAT_EQ(3.0f, pH);
 }
+
+TEST(phSenseTest, TestRawAdcVoltage) {
+    MockADC adc;
+    pHSense phSense(adc, 0, 1, 2);
+
+    const float simulated_voltage = 1.0f;
+
+    EXPECT_CALL(adc, readV(testing::_, 0))
+        .WillOnce(testing::DoAll(testing::SetArgReferee<0>(simulated_voltage), testing::Return(HAL_ADC::ErrorCode::NO_ERROR)));
+
+    phSense.poll();
+
+    float voltage = 0.0f;
+
+    EXPECT_EQ(pHSense::ErrorCode::NO_ERROR, phSense.get_rawVoltage(voltage));
+
+    EXPECT_FLOAT_EQ(simulated_voltage, voltage);
+}

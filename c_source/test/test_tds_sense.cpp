@@ -45,3 +45,19 @@ TEST(TDSSenseTest, TestAdcVoltageToTDSConversion) {
 
     EXPECT_FLOAT_EQ(3.0f, TDS);
 }
+
+TEST(TDSSenseTest, TestRawAdcVoltage) {
+    MockADC adc;
+    TDSSense TDSSense(adc, 0, 1, 2);
+
+    const float simulated_voltage = 1.0f;
+
+    EXPECT_CALL(adc, readV(testing::_, 0))
+        .WillOnce(testing::DoAll(testing::SetArgReferee<0>(simulated_voltage), testing::Return(HAL_ADC::ErrorCode::NO_ERROR)));
+
+    TDSSense.poll();
+
+    float voltage = 0.0f;
+    EXPECT_EQ(TDSSense::ErrorCode::NO_ERROR, TDSSense.get_rawVoltage(voltage));
+    EXPECT_FLOAT_EQ(simulated_voltage, voltage);
+}

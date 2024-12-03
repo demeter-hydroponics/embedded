@@ -1,9 +1,13 @@
 import os
 from util import *
+from build_protobuf import build_protobuf
 
 INCLUDE_DIRS = [
+    "c_source/inc/device",
     "c_source/inc/driver",
     "c_source/HAL",
+    "generated/c",
+    "libs/protobuf/submodules/nanopb",
 ]
 
 # Add additional strict checks for clang-tidy
@@ -43,6 +47,9 @@ def run_clang_tidy(file, checks, include_dir_str):
 
 
 def main():
+    # Build the protobuf files
+    build_protobuf()
+
     c_files = get_files_with_extensions(
         (".cpp"), ["build", "test"], base_path="c_source"
     )

@@ -9,6 +9,7 @@ EXCLUDE_DIRS = [
     "libs",
     "demeter-embedded-venv",
     "managed_components",
+    "generated",
 ]
 EMBEDDED_EXTENSIONS = (".c", ".h", ".cpp", ".hpp")
 PYTHON_EXTENSION = ".py"
