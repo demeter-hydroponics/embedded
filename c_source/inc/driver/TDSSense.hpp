@@ -4,7 +4,21 @@
 #include "HAL_ADC.hpp"
 #include "stdint.h"
 
-class TDSSense {
+class BaseTDSSense {
+   public:
+    /**
+     * @brief The error codes for the TDS sensor
+     */
+    enum class ErrorCode {
+        NO_ERROR,
+        ADC_ERROR,
+    };
+
+    virtual ErrorCode get_TDS_concentration(float& TDS) = 0;
+    virtual ErrorCode get_rawVoltage(float& voltage) = 0;
+};
+
+class TDSSense : public BaseTDSSense {
    public:
     /**
      * @brief Construct a new TDSSense object
@@ -17,14 +31,6 @@ class TDSSense {
     TDSSense(HAL_ADC& adc, uint8_t channel, float gain, float offset);
 
     /**
-     * @brief The error codes for the TDS sensor
-     */
-    enum class ErrorCode {
-        NO_ERROR,
-        ADC_ERROR,
-    };
-
-    /**
      * @brief Poll the TDS sensor for a new reading
      * @return The error code
      */
@@ -35,7 +41,14 @@ class TDSSense {
      * @param TDS The measured TDS concentreation
      * @return The error code
      */
-    ErrorCode get_TDS_concentration(float& TDS);
+    ErrorCode get_TDS_concentration(float& TDS) override;
+
+    /**
+     * @brief Get the raw voltage from the sensor
+     * @param voltage The raw voltage
+     * @return The error code
+     */
+    ErrorCode get_rawVoltage(float& voltage) override;
 
    private:
     HAL_ADC& adc_;

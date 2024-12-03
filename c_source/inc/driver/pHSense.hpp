@@ -4,7 +4,21 @@
 #include "HAL_ADC.hpp"
 #include "stdint.h"
 
-class pHSense {
+class BasepHSense {
+   public:
+    /**
+     * @brief The error codes for the pH sensor
+     */
+    enum class ErrorCode {
+        NO_ERROR,
+        ADC_ERROR,
+    };
+
+    virtual ErrorCode get_pH(float& pH) = 0;
+    virtual ErrorCode get_rawVoltage(float& voltage) = 0;
+};
+
+class pHSense : public BasepHSense {
    public:
     /**
      * @brief Construct a new pHSense object
@@ -17,14 +31,6 @@ class pHSense {
     pHSense(HAL_ADC& adc, uint8_t channel, float gain, float offset);
 
     /**
-     * @brief The error codes for the pH sensor
-     */
-    enum class ErrorCode {
-        NO_ERROR,
-        ADC_ERROR,
-    };
-
-    /**
      * @brief Poll the pH sensor for a new reading
      * @return The error code
      */
@@ -35,7 +41,14 @@ class pHSense {
      * @param pH The pH value
      * @return The error code
      */
-    ErrorCode get_pH(float& pH);
+    ErrorCode get_pH(float& pH) override;
+
+    /**
+     * @brief Get the raw voltage from the sensor
+     * @param voltage The raw voltage
+     * @return The error code
+     */
+    ErrorCode get_rawVoltage(float& voltage) override;
 
    private:
     HAL_ADC& adc_;

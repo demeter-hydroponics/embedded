@@ -38,3 +38,15 @@ TDSSense::ErrorCode TDSSense::get_TDS_concentration(float& TDS) {
 
     return error;
 }
+
+TDSSense::ErrorCode TDSSense::get_rawVoltage(float& voltage) {
+    voltage = voltage_;
+
+    ErrorCode error = ErrorCode::NO_ERROR;
+
+    if (adc_error_ != HAL_ADC::ErrorCode::NO_ERROR) {
+        error = ErrorCode::ADC_ERROR;
+    }
+
+    return error;
+}
