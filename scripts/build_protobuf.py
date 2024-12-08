@@ -22,6 +22,7 @@ def build_protobuf():
     command = [
         "python3",
         generate_script_path,
+        "--generate_python",
         "--output_dir",
         GENERATED_PATH,  # Pass the output directory as an argument
     ]

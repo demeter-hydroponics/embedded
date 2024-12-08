@@ -6,3 +6,4 @@ websockets
 matplotlib
 protobuf 
 grpcio-tools
+click
