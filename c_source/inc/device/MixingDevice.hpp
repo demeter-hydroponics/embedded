@@ -1,6 +1,7 @@
 #ifndef MIXING_DEVICE_HPP
 #define MIXING_DEVICE_HPP
 
+#include "CommManagerTypes.hpp"
 #include "MessageQueue.hpp"
 #include "TDSSense.hpp"
 #include "messages/pump/mixing_stats.pb.h"
@@ -13,7 +14,7 @@ class MixingDevice {
      * @param pHSense The pH sensor
      * @param TDSSense The TDS sensor
      */
-    MixingDevice(BasepHSense& pHSense, BaseTDSSense* TDSSense, MessageQueue<MixingTankStats>& messageQueue);
+    MixingDevice(BasepHSense& pHSense, BaseTDSSense* TDSSense, MessageQueue<CommManagerQueueData_t>& messageQueue);
 
     /**
      * @brief The error codes for the mixing device
@@ -47,7 +48,7 @@ class MixingDevice {
    private:
     BasepHSense& pHSense_;
     BaseTDSSense* TDSSense_;
-    MessageQueue<MixingTankStats>& messageQueue_;
+    MessageQueue<CommManagerQueueData_t>& messageQueue_;
 
     BasepHSense::ErrorCode pH_error_ = BasepHSense::ErrorCode::NO_ERROR;
     BaseTDSSense::ErrorCode TDS_error_ = TDSSense::ErrorCode::NO_ERROR;
