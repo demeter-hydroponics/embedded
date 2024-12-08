@@ -1,6 +1,46 @@
 import asyncio
 import websockets
 
+# note: if running in WSL, may need to do netsh interface stuff to forward
+
+# add root of project to python path
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+from generated.python.messages.common import common_pb2
+from generated.python.messages.metrics import node_stats_pb2
+
+
+# construct a fake common pb2 message to get the size of the serialized message
+def get_common_pb2_size():
+    common_pb2_message = common_pb2.MessageHeader()
+    common_pb2_message.channel = common_pb2.MessageChannels.NODE_STATS
+    common_pb2_message.timestamp = 1234567890
+    common_pb2_message.length = 0
+    return common_pb2_message.ByteSize()
+
+
+COMMON_PB2_SIZE_BYTES = get_common_pb2_size()
+
+
+def print_messages(frame):
+    # get the common_pb2 message
+    frame_size_bytes = len(frame)
+    pointer = 0
+    while pointer < frame_size_bytes:
+        header = common_pb2.MessageHeader()
+        header.ParseFromString(frame[pointer : pointer + COMMON_PB2_SIZE_BYTES])
+        pointer += COMMON_PB2_SIZE_BYTES
+        print(header)
+
+        if header.channel == common_pb2.MessageChannels.NODE_STATS:
+            node_stats = node_stats_pb2.NodeStats()
+            node_stats.ParseFromString(frame[pointer : pointer + header.length])
+            pointer += header.length
+            print(node_stats)
+
 
 # Handler for each client connection
 async def handle_client(websocket):
@@ -10,9 +50,8 @@ async def handle_client(websocket):
 
     try:
         async for message in websocket:
-            print(f"Message received from {client_address}: {message}")
-            # Echo the message back to the client
-            await websocket.send(f"Echo: {message}")
+            # print(f"Message received from {client_address}: {message}")
+            print_messages(message)
     except websockets.ConnectionClosed:
         print(f"Client {client_address} disconnected")
 

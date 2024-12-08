@@ -1,5 +1,6 @@
 import os
 import argparse
+import click
 from build_protobuf import build_protobuf
 
 project_paths = {
@@ -45,7 +46,7 @@ def main(args):
 
     build_protobuf()
 
-    if args.project == "all":
+    if args.project == None:
         # get the current working directory
         paths = [
             os.path.join(proj_root, project_path)
@@ -59,11 +60,15 @@ def main(args):
         if args.build is True:
             os.system("idf.py build")
 
-        if args.flash:
-            os.system(f"idf.py -p {args.port} flash")
+    if (args.project is None) and (args.flash or args.monitor):
+        click.secho("A project must be specified to flash or monitor", fg="red")
+        return
 
-        if args.monitor:
-            os.system(f"idf.py -p {args.port} monitor")
+    if args.flash:
+        os.system(f"idf.py -p {args.port} flash")
+
+    if args.monitor:
+        os.system(f"idf.py -p {args.port} monitor")
 
 
 if __name__ == "__main__":
@@ -73,9 +78,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--project", help="Project to build", choices=project_paths.keys()
     )
-    parser.add_argument(
-        "--build", help="Build the project", action="store_true", default=True
-    )
+    parser.add_argument("--build", help="Build the project", action="store_true")
     parser.add_argument(
         "--flash", help="Flash the project to the ESP32", action="store_true"
     )
@@ -84,7 +87,9 @@ if __name__ == "__main__":
     )
 
     # add an arg to specify the port
-    parser.add_argument("--port", help="Serial port for the ESP32")
+    parser.add_argument(
+        "--port", help="Serial port for the ESP32", default="/dev/ttyUSB0"
+    )
 
     args = parser.parse_args()
 

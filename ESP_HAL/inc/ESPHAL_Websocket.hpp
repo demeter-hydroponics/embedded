@@ -7,11 +7,10 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 
-#define WEBSOCKET_MAX_RECEIVE_QUEUE_SIZE 10
-#define WEBSOCKET_MAX_RECV_FRAME_SIZE_BYTES 1024
+#define WEBSOCKET_MAX_RECEIVE_QUEUE_SIZE 4
+#define WEBSOCKET_MAX_SEND_RECV_FRAME_SIZE_BYTES 512
 
-#define WEBSOCKET_MAX_SEND_QUEUE_SIZE 10
-#define WEBSOCKET_MAX_SEND_FRAME_SIZE_BYTES 1024
+#define WEBSOCKET_MAX_SEND_QUEUE_SIZE 20
 
 class ESPHAL_Websocket : public TransportLayer {
    public:
@@ -35,7 +34,7 @@ class ESPHAL_Websocket : public TransportLayer {
 
     typedef struct {
         size_t length;
-        uint8_t data[WEBSOCKET_MAX_RECV_FRAME_SIZE_BYTES];
+        uint8_t data[WEBSOCKET_MAX_SEND_RECV_FRAME_SIZE_BYTES];
     } SendReceiveQueueData;
 
    private:
