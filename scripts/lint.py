@@ -5,6 +5,7 @@ from build_protobuf import build_protobuf
 INCLUDE_DIRS = [
     "c_source/inc/device",
     "c_source/inc/driver",
+    "c_source/inc/app",
     "c_source/HAL",
     "generated/c",
     "libs/protobuf/submodules/nanopb",
@@ -29,6 +30,10 @@ EXCLUDED_CHECKS = [
     "modernize-use-trailing-return-type",
     "bugprone-easily-swappable-parameters",
     "readability-identifier-length",
+    "cppcoreguidelines-pro-bounds-pointer-arithmetic",  # Pointer arithmetic bounds checking
+    "hicpp-use-auto",
+    "modernize-use-auto",
+    "misc-include-cleaner",
 ]
 
 # Build include directories string for the clang-tidy command

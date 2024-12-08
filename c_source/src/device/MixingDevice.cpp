@@ -1,12 +1,14 @@
 #include "MixingDevice.hpp"
 
+#include "CommManagerTypes.hpp"
 #include "MessageQueue.hpp"
 #include "TDSSense.hpp"
 #include "messages/pump/mixing_stats.pb.h"
 #include "pHSense.hpp"
+#include "pb_encode.h"
 #include "util.hpp"
 
-MixingDevice::MixingDevice(BasepHSense& pHSense, BaseTDSSense* TDSSense, MessageQueue<MixingTankStats>& messageQueue)
+MixingDevice::MixingDevice(BasepHSense& pHSense, BaseTDSSense* TDSSense, MessageQueue<CommManagerQueueData_t>& messageQueue)
     : pHSense_(pHSense),
       TDSSense_(TDSSense),
       messageQueue_(messageQueue),
@@ -50,8 +52,15 @@ MixingDevice::ErrorCode MixingDevice::run() {
     mixingTankStats.pHSense.Validity =
         (pH_error_ == BasepHSense::ErrorCode::NO_ERROR) ? SensorValidity_VALID : SensorValidity_INVALID;
 
-    // Send the message to the message queue
-    IGNORE(messageQueue_.send(mixingTankStats));
+    CommManagerQueueData_t data;
+    data.header.channel = MessageChannels_MIXING_STATS;
+    data.header.length = MixingTankStats_size;
+
+    uint8_t* buffer = static_cast<uint8_t*>(data.data);
+    pb_ostream_t ostream = pb_ostream_from_buffer(buffer, MixingTankStats_size);
+    IGNORE(pb_encode(&ostream, MixingTankStats_fields, &mixingTankStats));
+
+    IGNORE(messageQueue_.send(data));
 
     return err;
 }
