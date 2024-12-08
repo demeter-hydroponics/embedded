@@ -84,7 +84,9 @@ if __name__ == "__main__":
     )
 
     # add an arg to specify the port
-    parser.add_argument("--port", help="Serial port for the ESP32")
+    parser.add_argument(
+        "--port", help="Serial port for the ESP32", default="/dev/ttyUSB0"
+    )
 
     args = parser.parse_args()
 

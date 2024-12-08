@@ -60,3 +60,5 @@ __pycache__/
 demeter-embedded-venv/
 managed_components/
 generated/
+
+.vscode/settings.json

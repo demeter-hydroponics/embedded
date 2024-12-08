@@ -12,7 +12,7 @@ async def handle_client(websocket):
         async for message in websocket:
             print(f"Message received from {client_address}: {message}")
             # Echo the message back to the client
-            await websocket.send(f"Echo: {message}")
+            # await websocket.send(f"Echo: {message}")
     except websockets.ConnectionClosed:
         print(f"Client {client_address} disconnected")
 

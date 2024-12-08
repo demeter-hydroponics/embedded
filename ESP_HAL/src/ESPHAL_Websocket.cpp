@@ -38,11 +38,11 @@ ESPHAL_Websocket::State ESPHAL_Websocket::init(const char *uri) {
         ESP_LOGI(TAG, "Websocket Client started");
     }
 
-    receive_queue = xQueueCreateStatic(WEBSOCKET_MAX_RECEIVE_QUEUE_SIZE, WEBSOCKET_MAX_RECV_FRAME_SIZE_BYTES, receive_buffer,
+    receive_queue = xQueueCreateStatic(WEBSOCKET_MAX_RECEIVE_QUEUE_SIZE, WEBSOCKET_MAX_SEND_RECV_FRAME_SIZE_BYTES, receive_buffer,
                                        &receive_queue_buffer);
 
-    send_queue =
-        xQueueCreateStatic(WEBSOCKET_MAX_SEND_QUEUE_SIZE, WEBSOCKET_MAX_SEND_FRAME_SIZE_BYTES, send_buffer, &send_queue_buffer);
+    send_queue = xQueueCreateStatic(WEBSOCKET_MAX_SEND_QUEUE_SIZE, WEBSOCKET_MAX_SEND_RECV_FRAME_SIZE_BYTES, send_buffer,
+                                    &send_queue_buffer);
 
     state_ = state;
 
@@ -65,6 +65,7 @@ void ESPHAL_Websocket::event_handler(void *arg, esp_event_base_t event_base, int
             break;
         case WEBSOCKET_EVENT_DATA: {
             instance->event_receive_working_data.length = data->data_len;
+            ESP_LOGI(TAG, "Received data of length %d", data->data_len);
             memcpy(instance->event_receive_working_data.data, data->data_ptr, data->data_len);
             if (xQueueSend(instance->receive_queue, &instance->event_receive_working_data, 0U) != pdTRUE) {
                 ESP_LOGE(TAG, "Failed to send data of length %d to receive queue", data->data_len);
