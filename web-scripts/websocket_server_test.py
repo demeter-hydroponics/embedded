@@ -12,6 +12,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", "generated", "pyth
 
 from generated.python import common_pb2
 from generated.python.metrics import node_stats_pb2
+from generated.python.pump import mixing_stats_pb2
 
 
 # construct a fake common pb2 message to get the size of the serialized message
@@ -41,6 +42,11 @@ def print_messages(frame):
             node_stats.ParseFromString(frame[pointer : pointer + header.length])
             pointer += header.length
             print(node_stats)
+        elif header.channel == common_pb2.MessageChannels.MIXING_STATS:
+            mixing_stats = mixing_stats_pb2.MixingTankStats()
+            mixing_stats.ParseFromString(frame[pointer : pointer + header.length])
+            pointer += header.length
+            print(mixing_stats)
 
 
 # Handler for each client connection
