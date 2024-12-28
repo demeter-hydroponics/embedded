@@ -4,8 +4,8 @@
 #include "CommManagerTypes.hpp"
 #include "MessageQueue.hpp"
 #include "TDSSense.hpp"
-#include "messages/pump/mixing_stats.pb.h"
 #include "pHSense.hpp"
+#include "pump/mixing_stats.pb.h"
 
 class MixingDevice {
    public:

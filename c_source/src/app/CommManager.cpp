@@ -6,7 +6,7 @@
 #include "CommManagerTypes.hpp"
 #include "MessageQueue.hpp"
 #include "TransportLayer.hpp"
-#include "messages/common/common.pb.h"
+#include "common.pb.h"
 #include "pb.h"
 #include "pb_encode.h"
 

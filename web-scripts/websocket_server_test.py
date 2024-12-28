@@ -8,9 +8,10 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "generated", "python"))
 
-from generated.python.messages.common import common_pb2
-from generated.python.messages.metrics import node_stats_pb2
+from generated.python import common_pb2
+from generated.python.metrics import node_stats_pb2
 
 
 # construct a fake common pb2 message to get the size of the serialized message
