@@ -6,7 +6,7 @@
 #include "MockMessageQueue.hpp"
 #include "MockTDS.hpp"
 #include "MockpH.hpp"
-#include "messages/pump/mixing_stats.pb.h"
+#include "pump/mixing_stats.pb.h"
 #include "util.hpp"
 
 TEST(MixingDeviceTest, TestReadAndPbOutput) {

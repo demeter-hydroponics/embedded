@@ -15,7 +15,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Og -g -Werror -Wextra -Wall")
 add_definitions(-DUNIT_TEST)
 
 set(GENERATED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../generated)
-set(PROTOBUF_DIR ${GENERATED_DIR}/c/messages)
+set(PROTOBUF_DIR ${GENERATED_DIR}/c)
 set(PBLIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../libs/protobuf/submodules/nanopb)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../inc)
@@ -29,12 +29,13 @@ include_directories(SYSTEM ${PBLIB_DIR}) # system in order to avoid the thing fr
 include_directories(${GENERATED_DIR}/c)
 
 file(GLOB_RECURSE PROTOBUF_SOURCES ${PROTOBUF_DIR}/**/*.c)
+file(GLOB COMMON_PROTOBUF_SOURCE ${PROTOBUF_DIR}/*.c)
 file(GLOB PBLIB_SOURCES ${PBLIB_DIR}/*.c)
 
 # Add the sources from ../src
 file(GLOB_RECURSE CPP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../src/*.cpp)
 
-add_library(MAIN_SOURCES_LIB ${CPP_SOURCES} ${PROTOBUF_SOURCES})
+add_library(MAIN_SOURCES_LIB ${CPP_SOURCES} ${PROTOBUF_SOURCES} ${COMMON_PROTOBUF_SOURCE})
 target_compile_options(MAIN_SOURCES_LIB PRIVATE -pedantic -pedantic-errors -Wfloat-equal -Wredundant-decls -Wswitch-default -pedantic -Wconversion)
 
 # Define the libs directory variable

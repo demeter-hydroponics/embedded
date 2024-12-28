@@ -11,7 +11,7 @@
 #include "freertos/FreeRTOS.h"
 
 #ifdef DEMO_SEND_NODESTATS
-#include "messages/metrics/node_stats.pb.h"
+#include "metrics/node_stats.pb.h"
 #include "pb_encode.h"
 #endif
 

@@ -17,6 +17,7 @@ set(APP_INC_DIR "${APPLICATION_DIR}/inc/app")
 file(GLOB HAL_SOURCES "${ESP32HAL_DIR}/src/*.cpp")
 file(GLOB_RECURSE HIGH_LEVEL_SOURCES "${APPLICATION_DIR}/**/*.cpp")
 file(GLOB PB_SOURCES "${NANOPB_DIR}/*.c")
+file(GLOB COMMON_MSG_SOURCES "${MESSAGES_DIR}/*.c")
 file(GLOB_RECURSE MESSAGES_SOURCES "${MESSAGES_DIR}/**/*.c")
 # Remove files from the test directory
 list(FILTER HIGH_LEVEL_SOURCES EXCLUDE REGEX "${APPLICATION_DIR}/test/.*\\.cpp$")
@@ -29,6 +30,7 @@ idf_component_register(SRCS "pump-controller.c"
                     ${HIGH_LEVEL_SOURCES}
                     ${HAL_SOURCES}
                     ${PB_SOURCES}
+                    ${COMMON_MSG_SOURCES}
                     ${MESSAGES_SOURCES}
                     INCLUDE_DIRS "."
                     ${NANOPB_DIR}
