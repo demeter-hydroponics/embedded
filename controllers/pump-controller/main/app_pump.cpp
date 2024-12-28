@@ -5,25 +5,36 @@
 #include "ESPHAL_MessageQueue.hpp"
 #include "ESPHAL_Websocket.hpp"
 #include "ESPHAL_Wifi.hpp"
+#include "MixingDevice.hpp"
+#include "TDSSense.hpp"
 #include "config.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
+#include "pHSense.hpp"
 
 static const char *TAG = "PUMP_CONTROLLER_APP_MAIN";
 
 static ESPHAL_Wifi wifi;
 static ESPHAL_Websocket websocket;
-
-static uint8_t active_channels[] = {5};  // GPIO33, test
-static ESPHAL_ADC adc(ADC_UNIT_1, active_channels, sizeof(active_channels) / sizeof(active_channels[0]));
-
-static const char *uri = WEBSOCKET_URI;
-
 static ESPHAL_MessageQueue<CommManagerQueueData_t, 50> commMessageQueue;
 static CommManager commManager(websocket, commMessageQueue);
 
+static uint8_t active_channels[] = {1, 2};  // Channel 1 for the pH sensor, Channel 2 for the TDS sensor
+static ESPHAL_ADC adc1(ADC_UNIT_1, active_channels, sizeof(active_channels) / sizeof(active_channels[0]));
+
+static pHSense pH(adc1, 1, 1.0f, 0.0f);
+static TDSSense tds(adc1, 2, 1.0f, 0.0f);
+
+static MixingDevice mixingDevice(pH, &tds, commMessageQueue);
+
+static const char *uri = WEBSOCKET_URI;
+
 void task_10ms_run(void *pvParameters) {
     while (1) {
+        pH.poll();
+        tds.poll();
+        mixingDevice.run();
+
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
@@ -42,7 +53,7 @@ void app_run() {
     esp_log_level_set("*", ESP_LOG_INFO);
     esp_log_level_set(TAG, ESP_LOG_DEBUG);
 
-    adc.init();
+    adc1.init();
 
     // Initialize the wifi
     wifi.init();

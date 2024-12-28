@@ -58,7 +58,10 @@ def main(args):
     for path in paths:
         os.chdir(path)
         if args.build is True:
-            os.system("idf.py build")
+            retcode = os.system("idf.py build")
+            if retcode != 0:
+                click.secho(f"Failed to build {path}", fg="red")
+                return
 
     if (args.project is None) and (args.flash or args.monitor):
         click.secho("A project must be specified to flash or monitor", fg="red")
