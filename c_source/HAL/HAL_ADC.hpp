@@ -10,6 +10,7 @@ class HAL_ADC {
         INVALID_CHANNEL,
         INVALID_VOLTAGE,
         ERROR_INITIALIZING,
+        READ_ERROR,
     };
 
     /**
