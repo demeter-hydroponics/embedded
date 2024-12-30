@@ -23,6 +23,20 @@ BinaryLoad::ErrorCode BinaryLoad::init() {
     return error;
 }
 
+BinaryLoad::ErrorCode BinaryLoad::poll() {
+    ErrorCode error = ErrorCode::NO_ERROR;
+
+    if (error == ErrorCode::NO_ERROR) {
+        float readADC = 0.0f;
+        currentSenseError_ = ADC_.readV(readADC, currentChannel_);
+        if (currentSenseError_ == HAL_ADC::ErrorCode::NO_ERROR) {
+            current_ = readADC * currentScale_;
+        }
+    }
+
+    return error;
+}
+
 BinaryLoad::ErrorCode BinaryLoad::setEnabled(bool enable) {
     ErrorCode error = ErrorCode::NO_ERROR;
 
@@ -35,10 +49,11 @@ BinaryLoad::ErrorCode BinaryLoad::setEnabled(bool enable) {
 
 BinaryLoad::ErrorCode BinaryLoad::getCurrent(float& current) {
     ErrorCode error = ErrorCode::NO_ERROR;
-    if (ADC_.readV(current, currentChannel_) != HAL_ADC::ErrorCode::NO_ERROR) {
+
+    if (currentSenseError_ != HAL_ADC::ErrorCode::NO_ERROR) {
         error = ErrorCode::CURRENT_SENSE_ERROR;
     } else {
-        current = current * currentScale_;
+        current = current_;
     }
 
     return error;

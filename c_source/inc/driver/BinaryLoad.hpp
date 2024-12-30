@@ -60,6 +60,8 @@ class BinaryLoad : public BaseBinaryLoad {
      */
     ErrorCode init();
 
+    ErrorCode poll();
+
     /**
      * @brief Enable or disable the binary load
      *
@@ -92,8 +94,11 @@ class BinaryLoad : public BaseBinaryLoad {
     HAL_GPIO* fault_GPIO_;
     HAL_ADC& ADC_;
 
+    HAL_ADC::ErrorCode currentSenseError_ = HAL_ADC::ErrorCode::READ_ERROR;
+
     uint8_t currentChannel_;
 
+    float current_ = 0.0F;
     float currentScale_;
 };
 
