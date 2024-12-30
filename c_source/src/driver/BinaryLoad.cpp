@@ -24,10 +24,10 @@ BinaryLoad::ErrorCode BinaryLoad::init() {
 }
 
 BinaryLoad::ErrorCode BinaryLoad::poll() {
-    ErrorCode error = ErrorCode::NO_ERROR;
+    const ErrorCode error = ErrorCode::NO_ERROR;
 
     if (error == ErrorCode::NO_ERROR) {
-        float readADC = 0.0f;
+        float readADC = 0.0F;
         currentSenseError_ = ADC_.readV(readADC, currentChannel_);
         if (currentSenseError_ == HAL_ADC::ErrorCode::NO_ERROR) {
             current_ = readADC * currentScale_;

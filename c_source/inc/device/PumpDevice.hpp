@@ -11,16 +11,19 @@ class BasePumpDevice {
     enum class ErrorCode {
         NO_ERROR,
         SENSOR_READ_ERROR,
+        NOT_IMPLEMENTED,
+        INVALID_ARGUMENTS,
+        LOAD_ACTUATION_ERROR,
     };
     enum class PumpType {
         PUMP_PRIMARY,
         PUMP_SECONDARY,
     };
 
-    virtual ErrorCode run() = 0;
     virtual ErrorCode get_pumpRPM(float& rpm) = 0;
     virtual ErrorCode get_waterLevel(float& level) = 0;
     virtual ErrorCode get_pumpCurrent(PumpType pump, float& current) = 0;
+    virtual ErrorCode get_waterValveCurrent(float& current) = 0;
     virtual ErrorCode controlPump(PumpType pump, bool enable) = 0;
     virtual ErrorCode controlWaterValue(bool enable) = 0;
 };
@@ -30,19 +33,24 @@ class PumpDevice : public BasePumpDevice {
     /**
      * @brief Construct a new Pump Device object
      * @param messageQueue The message queue to send data to the communication manager
+     * @param primaryPump The primary pump
+     * @param secondaryPump The secondary pump
+     * @param waterValve The water valve
      */
-    PumpDevice(MessageQueue<CommManagerQueueData_t>& messageQueue, HallTach& hallTach, BaseBinaryLoad& primaryPump,
-               BaseBinaryLoad& secondaryPump);
+    PumpDevice(MessageQueue<CommManagerQueueData_t>& messageQueue, BaseBinaryLoad& primaryPump, BaseBinaryLoad& secondaryPump,
+               BaseBinaryLoad& waterValve);
+
     /**
      * @brief Run the pump device
-     * @return Status of the operation
      */
-    ErrorCode run() override;
+    ErrorCode run();
 
     /**
      * @brief Get the pump RPM
      * @param rpm The pump RPM
      * @return Status of the operation
+     *
+     * @todo Implement this function!
      */
     ErrorCode get_pumpRPM(float& rpm) override;
 
@@ -63,6 +71,13 @@ class PumpDevice : public BasePumpDevice {
     ErrorCode get_pumpCurrent(PumpType pump, float& current) override;
 
     /**
+     * @brief Get the water valve current
+     * @param current The water valve current in Amps
+     * @return Status of the operation
+     */
+    ErrorCode get_waterValveCurrent(float& current) override;
+
+    /**
      * @brief Enable the pump
      * @param pump The pump to enable
      * @param enable Enable the pump, disable if false
@@ -76,6 +91,12 @@ class PumpDevice : public BasePumpDevice {
      * @return Status of the operation
      */
     ErrorCode controlWaterValue(bool enable) override;
+
+   private:
+    MessageQueue<CommManagerQueueData_t>& messageQueue_;
+    BaseBinaryLoad& primaryPump_;
+    BaseBinaryLoad& secondaryPump_;
+    BaseBinaryLoad& waterValve_;
 };
 
 #endif  // PUMP_DEVICE_HPP
