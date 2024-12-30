@@ -4,6 +4,7 @@
 
 #include "HAL_ADC.hpp"
 #include "HAL_GPIO.hpp"
+#include "pump/pump_device.pb.h"
 
 class BaseBinaryLoad {
    public:
@@ -89,6 +90,16 @@ class BinaryLoad : public BaseBinaryLoad {
      */
     ErrorCode isFaulted(bool& fault) override;
 
+    /**
+     * @brief Populate a protobuf message with the binary load stats
+     *
+     * @param buffer The buffer to populate with the binary load stats
+     * @param buffer_size The size of the buffer (should be >= BinaryLoadStats_size)
+     *
+     * @return True if the buffer was populated, false otherwise
+     */
+    bool populateProtobufMessage(uint8_t* buffer, size_t buffer_size);
+
    private:
     HAL_GPIO& en_GPIO_;
     HAL_GPIO* fault_GPIO_;
@@ -98,6 +109,7 @@ class BinaryLoad : public BaseBinaryLoad {
 
     uint8_t currentChannel_;
 
+    bool enabled_ = false;
     float current_ = 0.0F;
     float currentScale_;
 };
