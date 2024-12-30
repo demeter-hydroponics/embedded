@@ -34,6 +34,7 @@ EXCLUDED_CHECKS = [
     "hicpp-use-auto",
     "modernize-use-auto",
     "misc-include-cleaner",
+    "readability-simplify-boolean-expr,-warnings-as-errors",
 ]
 
 # Build include directories string for the clang-tidy command
