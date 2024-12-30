@@ -1,5 +1,7 @@
 #include "BinaryLoad.hpp"
 
+#include "pb.h"
+#include "pb_encode.h"
 #include "util.hpp"
 
 BinaryLoad::BinaryLoad(HAL_GPIO& en_GPIO, HAL_GPIO* fault_GPIO, HAL_ADC& ADC, uint8_t currentChannel, float currentScale)
@@ -42,6 +44,8 @@ BinaryLoad::ErrorCode BinaryLoad::setEnabled(bool enable) {
 
     if (en_GPIO_.writePin(enable) != HAL_GPIO::ErrorCode::NO_ERROR) {
         error = ErrorCode::HAL_ERROR;
+    } else {
+        enabled_ = enable;
     }
 
     return error;
@@ -75,4 +79,26 @@ BinaryLoad::ErrorCode BinaryLoad::isFaulted(bool& fault) {
     }
 
     return error;
+}
+
+bool BinaryLoad::populateProtobufMessage(uint8_t* buffer, size_t buffer_size) {
+    bool success = false;
+
+    if (buffer_size >= BinaryLoadStats_size) {
+        BinaryLoadStats stats;
+        stats.current = current_;
+        stats.faulted = false;
+        stats.state = enabled_ ? BinaryLoadState_ENABLED : BinaryLoadState_DISABLED;
+
+        bool readFaulted = false;
+        ErrorCode error = isFaulted(readFaulted);
+        if (error == ErrorCode::NO_ERROR) {
+            stats.faulted = readFaulted;
+        }
+
+        pb_ostream_t ostream = pb_ostream_from_buffer(buffer, buffer_size);
+        success = pb_encode(&ostream, BinaryLoadStats_fields, &stats);
+    }
+
+    return success;
 }
