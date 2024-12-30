@@ -3,6 +3,11 @@
 #include "MockBinaryLoad.hpp"
 #include "MockMessageQueue.hpp"
 #include "PumpDevice.hpp"
+#include "pb.h"
+#include "pb_encode.h"
+#include "pump/pump_device.pb.h"
+#include "util.hpp"
+
 using namespace ::testing;
 
 TEST(PumpDeviceTest, enable_disable_pump_passthrough) {
@@ -71,4 +76,55 @@ TEST(PumpDeviceTests, get_current_with_error) {
     EXPECT_EQ(pumpDevice.get_pumpCurrent(BasePumpDevice::PumpType::PUMP_SECONDARY, current),
               BasePumpDevice::ErrorCode::SENSOR_READ_ERROR);
     EXPECT_EQ(pumpDevice.get_waterValveCurrent(current), BasePumpDevice::ErrorCode::SENSOR_READ_ERROR);
+}
+
+TEST(PumpDeviceTests, verify_protobuf_information_on_run) {
+    MockBinaryLoad mockPrimaryPump;
+    MockBinaryLoad mockSecondaryPump;
+    MockBinaryLoad mockWaterValve;
+    MockMessageQueue<CommManagerQueueData_t> messageQueue;
+
+    PumpDevice pumpDevice(messageQueue, mockPrimaryPump, mockSecondaryPump, mockWaterValve);
+
+    MessageHeader expected_header;
+    expected_header.channel = MessageChannels_PUMP_STATS;
+    expected_header.length = PumpTankStats_size;
+
+    BinaryLoadStats fakeBinaryLoadStats;
+    fakeBinaryLoadStats.current = 1.0f;
+    fakeBinaryLoadStats.state = BinaryLoadState_ENABLED;
+    fakeBinaryLoadStats.faulted = false;
+    fakeBinaryLoadStats.current_valid = SensorValidity_VALID;
+
+    EXPECT_CALL(mockPrimaryPump, populateProtobufMessage(testing::_)).WillOnce(DoAll(SetArgReferee<0>(fakeBinaryLoadStats)));
+    EXPECT_CALL(mockSecondaryPump, populateProtobufMessage(testing::_)).WillOnce(DoAll(SetArgReferee<0>(fakeBinaryLoadStats)));
+    EXPECT_CALL(mockWaterValve, populateProtobufMessage(testing::_)).WillOnce(DoAll(SetArgReferee<0>(fakeBinaryLoadStats)));
+
+    CommManagerQueueData_t received_data;
+
+    // Set expectations
+    EXPECT_CALL(messageQueue, send(testing::_))
+        .WillOnce(testing::DoAll(testing::Invoke([&received_data](const CommManagerQueueData_t& message) {
+                                     received_data = message;  // Capture the sent message
+                                 }),
+                                 testing::Return(true)));
+
+    pumpDevice.run();
+
+    // Check that the message sent is the same as the message created
+    EXPECT_EQ(expected_header.channel, received_data.header.channel);
+    EXPECT_EQ(expected_header.length, received_data.header.length);
+
+    // construct fake protobuf message
+    uint8_t buffer[PumpTankStats_size];
+    pb_ostream_t ostream = pb_ostream_from_buffer(buffer, PumpTankStats_size);
+
+    PumpTankStats expected_stats;
+    expected_stats.primary_pump = fakeBinaryLoadStats;
+    expected_stats.secondary_pump = fakeBinaryLoadStats;
+    expected_stats.water_valve = fakeBinaryLoadStats;
+
+    IGNORE(pb_encode(&ostream, PumpTankStats_fields, &expected_stats));
+
+    EXPECT_EQ(memcmp(buffer, received_data.data, PumpTankStats_size), 0);
 }

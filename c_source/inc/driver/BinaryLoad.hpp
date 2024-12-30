@@ -41,6 +41,15 @@ class BaseBinaryLoad {
      * @return The error code
      */
     virtual ErrorCode isFaulted(bool& fault) = 0;
+
+    /**
+     * @brief Populate a protobuf message with the binary load stats
+     *
+     *
+     *
+     * @return True if the buffer was populated, false otherwise
+     */
+    virtual void populateProtobufMessage(BinaryLoadStats& msg) = 0;
 };
 
 class BinaryLoad : public BaseBinaryLoad {
@@ -93,12 +102,9 @@ class BinaryLoad : public BaseBinaryLoad {
     /**
      * @brief Populate a protobuf message with the binary load stats
      *
-     * @param buffer The buffer to populate with the binary load stats
-     * @param buffer_size The size of the buffer (should be >= BinaryLoadStats_size)
-     *
-     * @return True if the buffer was populated, false otherwise
+     * @param msg The protobuf message to populate
      */
-    bool populateProtobufMessage(uint8_t* buffer, size_t buffer_size);
+    void populateProtobufMessage(BinaryLoadStats& msg) override;
 
    private:
     HAL_GPIO& en_GPIO_;

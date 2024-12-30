@@ -81,24 +81,14 @@ BinaryLoad::ErrorCode BinaryLoad::isFaulted(bool& fault) {
     return error;
 }
 
-bool BinaryLoad::populateProtobufMessage(uint8_t* buffer, size_t buffer_size) {
-    bool success = false;
+void BinaryLoad::populateProtobufMessage(BinaryLoadStats& msg) {
+    msg.current = current_;
+    msg.current_valid = (currentSenseError_ == HAL_ADC::ErrorCode::NO_ERROR) ? SensorValidity_VALID : SensorValidity_INVALID;
+    msg.state = enabled_ ? BinaryLoadState_ENABLED : BinaryLoadState_DISABLED;
+    msg.faulted = false;
 
-    if (buffer_size >= BinaryLoadStats_size) {
-        BinaryLoadStats stats;
-        stats.current = current_;
-        stats.faulted = false;
-        stats.state = enabled_ ? BinaryLoadState_ENABLED : BinaryLoadState_DISABLED;
-
-        bool readFaulted = false;
-        ErrorCode error = isFaulted(readFaulted);
-        if (error == ErrorCode::NO_ERROR) {
-            stats.faulted = readFaulted;
-        }
-
-        pb_ostream_t ostream = pb_ostream_from_buffer(buffer, buffer_size);
-        success = pb_encode(&ostream, BinaryLoadStats_fields, &stats);
+    bool readFaulted = false;
+    if (isFaulted(readFaulted) == ErrorCode::NO_ERROR) {
+        msg.faulted = readFaulted;
     }
-
-    return success;
 }

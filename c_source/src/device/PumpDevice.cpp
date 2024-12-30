@@ -1,12 +1,31 @@
 #include "PumpDevice.hpp"
 
+#include "pb_encode.h"
+#include "pump/pump_device.pb.h"
 #include "util.hpp"
 
 PumpDevice::PumpDevice(MessageQueue<CommManagerQueueData_t>& messageQueue, BaseBinaryLoad& primaryPump,
                        BaseBinaryLoad& secondaryPump, BaseBinaryLoad& waterValve)
     : messageQueue_(messageQueue), primaryPump_(primaryPump), secondaryPump_(secondaryPump), waterValve_(waterValve) {}
 
-PumpDevice::ErrorCode PumpDevice::run() { return ErrorCode::NOT_IMPLEMENTED; }
+PumpDevice::ErrorCode PumpDevice::run() {
+    PumpTankStats pumpTankStats;
+    primaryPump_.populateProtobufMessage(pumpTankStats.primary_pump);
+    secondaryPump_.populateProtobufMessage(pumpTankStats.secondary_pump);
+    waterValve_.populateProtobufMessage(pumpTankStats.water_valve);
+
+    CommManagerQueueData_t msg;
+    msg.header.channel = MessageChannels_PUMP_STATS;
+    msg.header.length = PumpTankStats_size;
+
+    uint8_t* buffer = static_cast<uint8_t*>(msg.data);
+    pb_ostream_t ostream = pb_ostream_from_buffer(buffer, PumpTankStats_size);
+    IGNORE(pb_encode(&ostream, PumpTankStats_fields, &pumpTankStats));
+
+    IGNORE(messageQueue_.send(msg));
+
+    return ErrorCode::NO_ERROR;
+}
 
 PumpDevice::ErrorCode PumpDevice::get_pumpRPM(float& rpm) {
     IGNORE(rpm);

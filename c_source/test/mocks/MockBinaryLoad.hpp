@@ -9,6 +9,7 @@ class MockBinaryLoad : public BaseBinaryLoad {
     MOCK_METHOD(BinaryLoad::ErrorCode, setEnabled, (bool enable), (override));
     MOCK_METHOD(BinaryLoad::ErrorCode, getCurrent, (float& current), (override));
     MOCK_METHOD(BinaryLoad::ErrorCode, isFaulted, (bool& fault), (override));
+    MOCK_METHOD(void, populateProtobufMessage, (BinaryLoadStats & msg), (override));
 };
 
 #endif  // MOCK_BINARY_LOAD_HPP
