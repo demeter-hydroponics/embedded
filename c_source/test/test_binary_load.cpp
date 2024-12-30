@@ -54,11 +54,13 @@ TEST(BinaryLoadTest, test_getCurrent) {
 
     float current = 0.0f;
     EXPECT_CALL(mockADC, readV(_, 3)).WillOnce(DoAll(SetArgReferee<0>(1.0f), Return(HAL_ADC::ErrorCode::NO_ERROR)));
+    binaryLoad.poll();
     EXPECT_EQ(BinaryLoad::ErrorCode::NO_ERROR, binaryLoad.getCurrent(current));
 
     EXPECT_FLOAT_EQ(7.2f, current);
 
     EXPECT_CALL(mockADC, readV(_, 3)).WillOnce(Return(HAL_ADC::ErrorCode::READ_ERROR));
+    binaryLoad.poll();
     EXPECT_EQ(BinaryLoad::ErrorCode::CURRENT_SENSE_ERROR, binaryLoad.getCurrent(current));
 }
 
