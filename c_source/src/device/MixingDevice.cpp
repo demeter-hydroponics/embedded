@@ -8,8 +8,10 @@
 #include "pump/mixing_stats.pb.h"
 #include "util.hpp"
 
-MixingDevice::MixingDevice(BasepHSense& pHSense, BaseTDSSense* TDSSense, MessageQueue<CommManagerQueueData_t>& messageQueue)
-    : pHSense_(pHSense),
+MixingDevice::MixingDevice(TimeServer& timeServer, BasepHSense& pHSense, BaseTDSSense* TDSSense,
+                           MessageQueue<CommManagerQueueData_t>& messageQueue)
+    : timeServer_(timeServer),
+      pHSense_(pHSense),
       TDSSense_(TDSSense),
       messageQueue_(messageQueue),
       pH_error_(BasepHSense::ErrorCode::ADC_ERROR),
@@ -55,6 +57,7 @@ MixingDevice::ErrorCode MixingDevice::run() {
     CommManagerQueueData_t data;
     data.header.channel = MessageChannels_MIXING_STATS;
     data.header.length = MixingTankStats_size;
+    IGNORE(timeServer_.getUClockUs(data.header.timestamp));
 
     uint8_t* buffer = static_cast<uint8_t*>(data.data);
     pb_ostream_t ostream = pb_ostream_from_buffer(buffer, MixingTankStats_size);

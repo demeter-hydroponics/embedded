@@ -3,6 +3,7 @@
 #include "CommManager.hpp"
 #include "ESPHAL_ADC.hpp"
 #include "ESPHAL_MessageQueue.hpp"
+#include "ESPHAL_Time.hpp"
 #include "ESPHAL_Websocket.hpp"
 #include "ESPHAL_Wifi.hpp"
 #include "MixingDevice.hpp"
@@ -14,6 +15,7 @@
 
 static const char *TAG = "PUMP_CONTROLLER_APP_MAIN";
 
+static ESPHAL_TimeServer timeServer;
 static ESPHAL_Wifi wifi;
 static ESPHAL_Websocket websocket;
 static ESPHAL_MessageQueue<CommManagerQueueData_t, 50> commMessageQueue;
@@ -25,7 +27,7 @@ static ESPHAL_ADC adc1(ADC_UNIT_1, active_channels, sizeof(active_channels) / si
 static pHSense pH(adc1, 1, 1.0f, 0.0f);
 static TDSSense tds(adc1, 2, 1.0f, 0.0f);
 
-static MixingDevice mixingDevice(pH, &tds, commMessageQueue);
+static MixingDevice mixingDevice(timeServer, pH, &tds, commMessageQueue);
 
 static const char *uri = WEBSOCKET_URI;
 
@@ -58,6 +60,16 @@ void app_run() {
     // Initialize the wifi
     wifi.init();
     websocket.init(uri);
+    timeServer.init();
+
+    while (sntp_get_sync_status() != SNTP_SYNC_STATUS_COMPLETED) {
+        ESP_LOGW(TAG, "Waiting for time to be synchronized...");
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+
+    utime_t uclock;
+    timeServer.getUClockUs(uclock);
+    ESP_LOGI(TAG, "Time synchronized: %llu", uclock);
 
     // Create the tasks
     xTaskCreate(task_10ms_run, "task_10ms_run", 4096, NULL, 4, NULL);
