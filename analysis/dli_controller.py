@@ -15,39 +15,47 @@ UMOL_TO_MOL = 1 / MOL_TO_UMOL
 
 class DLIController:
     def __init__(
-        self, controller_ontime_s_per_day, controller_start_time_s, dli_setpoint
+        self,
+        controller_ontime_s_per_day,
+        controller_start_time_s,
+        dli_setpoint,
+        controller_dt=SIMULATION_TIMESTEP_S,
     ):
+        self.controller_dt = controller_dt
         self.controller_ontime_s_per_day = controller_ontime_s_per_day
         self.controller_start_time_s = controller_start_time_s
         self.dli_setpoint = dli_setpoint
 
-        average_ppfd = (
+        self.average_ppfd = (
             dli_setpoint * MOL_TO_UMOL / controller_ontime_s_per_day
         )  # umol/(m^2*s)
 
         self.max_ppfd = 300  # umol/(m^2*s)
 
-        self.series_gain = average_ppfd
+        self.series_gain = self.average_ppfd
 
         self.K_p = 1  # PPFD/DLI_error
 
         self.received_dli = 0  # mol/(m^2)
+        self.reference_dli = 0  # mol/(m^2)
 
     def get_reference_DLI(self, time_s):
-        timevals = np.array(
-            [
-                0,
-                self.controller_start_time_s,
-                self.controller_start_time_s + self.controller_ontime_s_per_day,
-            ]
-        )
-        dli_vals = np.array([0, 0, self.dli_setpoint])
+        return self.reference_dli
 
-        return np.interp(time_s, timevals, dli_vals)
+    def integrate_dli_reference(self, time_s):
+        time_day = time_s % SECONDS_PER_DAY
+        if time_day in range(
+            self.controller_start_time_s,
+            self.controller_start_time_s + self.controller_ontime_s_per_day,
+        ):
+            self.reference_dli += (
+                self.average_ppfd * self.controller_dt * UMOL_TO_MOL
+            )  # mol/(m^2)
 
     def get_controller_output(self, measured_ppfd, time_s):
+        self.integrate_dli_reference(time_s)
         dli_error = self.get_reference_DLI(time_s) - self.received_dli
-        self.received_dli += measured_ppfd * UMOL_TO_MOL * SIMULATION_TIMESTEP_S
+        self.received_dli += measured_ppfd * UMOL_TO_MOL * self.controller_dt
 
         commanded_ppfd = self.series_gain * dli_error * self.K_p  # umol/(m^2*s)
 
