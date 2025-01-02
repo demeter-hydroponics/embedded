@@ -1,175 +1,143 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Constants
 DLI_SETPOINT = 12  # mol/(m^2*day)
-controller_ontime_interval_h = 12  # hours
-TIME_DAY_H = 24  # hours
-CYCLE_START_TIME_H = 6
 SECONDS_PER_HOUR = 3600
+CONTROLLER_ONTIME_S = 12 * SECONDS_PER_HOUR  # seconds
+SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR  # seconds
+SIMULATION_TIMESTEP_S = 300
+
 MOL_TO_UMOL = 1e6
-SIMULATION_INTERVAL_H = 0.5
+UMOL_TO_MOL = 1 / MOL_TO_UMOL
+
+# PPFD units; umol/(m^2*s)
 
 
 class DLIController:
-    def __init__(self):
-        self.stored_instantenous_ppfd = []
-        self.stored_instantenous_ppfd_setpoint = []
-        self.stored_controller_ppfd_output = []
-        self.stored_dli_error = []
-
-    def get_controller_output(
-        self, instantenous_ppfd, average_expected_ppfd, time_step_h
+    def __init__(
+        self, controller_ontime_s_per_day, controller_start_time_s, dli_setpoint
     ):
-        # Store instantaneous and setpoint PPFD
-        self.stored_instantenous_ppfd.append(instantenous_ppfd)
-        self.stored_instantenous_ppfd_setpoint.append(average_expected_ppfd)
+        self.controller_ontime_s_per_day = controller_ontime_s_per_day
+        self.controller_start_time_s = controller_start_time_s
+        self.dli_setpoint = dli_setpoint
 
-        # Calculate DLI error
-        dli_error = 0
-        for ppfd in self.stored_instantenous_ppfd_setpoint:
-            dli_error += ppfd * time_step_h * SECONDS_PER_HOUR / MOL_TO_UMOL
+        average_ppfd = (
+            dli_setpoint * MOL_TO_UMOL / controller_ontime_s_per_day
+        )  # umol/(m^2*s)
 
-        for ppfd in self.stored_controller_ppfd_output:
-            dli_error -= ppfd * time_step_h * SECONDS_PER_HOUR / MOL_TO_UMOL
+        self.max_ppfd = 300  # umol/(m^2*s)
 
-        for ppfd in self.stored_instantenous_ppfd:
-            dli_error -= ppfd * time_step_h * SECONDS_PER_HOUR / MOL_TO_UMOL
+        self.series_gain = average_ppfd
 
-        self.stored_dli_error.append(dli_error)
+        self.K_p = 1  # PPFD/DLI_error
 
-        # Calculate the controller output
-        controller_output = dli_error / (time_step_h * SECONDS_PER_HOUR) * MOL_TO_UMOL
-        controller_output = np.clip(controller_output, 0, average_expected_ppfd)
-        self.stored_controller_ppfd_output.append(controller_output)
+        self.received_dli = 0  # mol/(m^2)
 
-        return controller_output
-
-    @staticmethod
-    def get_expected_ontime_ppfd(dli_setpoint, controller_ontime_interval_h):
-        seconds_per_day = 86400
-        expected_ontime_ppfd = (
-            dli_setpoint
-            * MOL_TO_UMOL
-            / (seconds_per_day * controller_ontime_interval_h / TIME_DAY_H)
+    def get_reference_DLI(self, time_s):
+        timevals = np.array(
+            [
+                0,
+                self.controller_start_time_s,
+                self.controller_start_time_s + self.controller_ontime_s_per_day,
+            ]
         )
-        return expected_ontime_ppfd
+        dli_vals = np.array([0, 0, self.dli_setpoint])
+
+        return np.interp(time_s, timevals, dli_vals)
+
+    def get_controller_output(self, measured_ppfd, time_s):
+        dli_error = self.get_reference_DLI(time_s) - self.received_dli
+        self.received_dli += measured_ppfd * UMOL_TO_MOL * SIMULATION_TIMESTEP_S
+
+        commanded_ppfd = self.series_gain * dli_error * self.K_p  # umol/(m^2*s)
+
+        commanded_ppfd = np.clip(commanded_ppfd, 0, self.max_ppfd)
+
+        return commanded_ppfd
+
+
+class SunlightModel:
+    def __init__(self, time_vectors, ppfd_vectors):
+        self.time_vectors = time_vectors
+        self.ppfd_vectors = ppfd_vectors
+
+    def get_sunlight_injected_ppfd(self, time_s):
+        return np.interp(time_s, self.time_vectors, self.ppfd_vectors)
 
 
 class Simulator:
-    def __init__(
-        self,
-        dli_controller,
-        dli_setpoint,
-        controller_ontime_interval_h,
-        time_day_h,
-        cycle_start_time_h,
-    ):
-        self.controller = dli_controller
-        self.dli_setpoint = dli_setpoint
-        self.controller_ontime_interval_h = controller_ontime_interval_h
-        self.time_day_h = time_day_h
-        self.cycle_start_time_h = cycle_start_time_h
+    def __init__(self, dli_controller, sunlight_model):
+        self.dli_controller = dli_controller
+        self.sunlight_model = sunlight_model
+
+        self.measured_ppfd = []
+        self.received_dli = []
+        self.dli_reference = []
+        self.controller_output = []
+        self.sunlight_injected_ppfd = []
+        self.time_s = []
 
     def simulate(self):
-        expected_ontime_ppfd = self.controller.get_expected_ontime_ppfd(
-            self.dli_setpoint, self.controller_ontime_interval_h
-        )
-        print("Expected on-time PPFD:", expected_ontime_ppfd)
-
-        time_intervals = np.arange(
-            0, self.time_day_h + SIMULATION_INTERVAL_H, SIMULATION_INTERVAL_H
-        )
-
-        time_plotted = []
-        controller_expected_ppfd_stored = []
-        instantenous_ppfd_stored = []
-        controller_output_stored = []
-        tot_output_stored = []
-        dli_accumulator_stored = []
-
-        for time_h in time_intervals:
-            instantenous_ppfd = 0
-            controller_expected_ppfd = 0
-            if (
-                self.cycle_start_time_h
-                <= time_h
-                < (self.cycle_start_time_h + self.controller_ontime_interval_h)
-            ):
-                instantenous_ppfd = np.random.uniform(0.7, 0.9) * expected_ontime_ppfd
-                controller_expected_ppfd = expected_ontime_ppfd
-
-            controller_expected_ppfd_stored.append(controller_expected_ppfd)
-            instantenous_ppfd_stored.append(instantenous_ppfd)
-
-            controller_output = self.controller.get_controller_output(
-                instantenous_ppfd, controller_expected_ppfd, SIMULATION_INTERVAL_H
-            )
-            controller_output_stored.append(controller_output)
-
-            tot_output = instantenous_ppfd + controller_output
-            tot_output_stored.append(tot_output)
-            tot_output_time_compensated = (
-                tot_output / 1e6 * SIMULATION_INTERVAL_H * SECONDS_PER_HOUR
-            )
-            dli_accumulator_stored.append(
-                tot_output_time_compensated
-                + (dli_accumulator_stored[-1] if time_h > 0 else 0)
+        for time_s in range(0, SECONDS_PER_DAY, SIMULATION_TIMESTEP_S):
+            sunlight_injected_ppfd = self.sunlight_model.get_sunlight_injected_ppfd(
+                time_s
             )
 
-            time_plotted.append(time_h)
+            measured_ppfd = 0
+            received_dli = 0
 
-        self.plot_results(
-            time_plotted,
-            controller_expected_ppfd_stored,
-            instantenous_ppfd_stored,
-            controller_output_stored,
-            tot_output_stored,
-            dli_accumulator_stored,
-        )
+            if time_s > 0:
+                measured_ppfd = self.controller_output[-1] + sunlight_injected_ppfd
+                instaneous_dli_gain = (
+                    measured_ppfd * UMOL_TO_MOL * SIMULATION_TIMESTEP_S
+                )
+                received_dli = self.received_dli[-1] + instaneous_dli_gain
 
-    @staticmethod
-    def plot_results(
-        time_plotted,
-        controller_expected_ppfd_stored,
-        instantenous_ppfd_stored,
-        controller_output_stored,
-        tot_output_stored,
-        dli_accumulator_stored,
-    ):
-        fig, axs = plt.subplots(2, sharex=True)
-        fig.suptitle("PPFD Controller Simulation")
+            self.sunlight_injected_ppfd.append(sunlight_injected_ppfd)
+            self.measured_ppfd.append(measured_ppfd)
+            self.received_dli.append(received_dli)
+            self.controller_output.append(
+                self.dli_controller.get_controller_output(measured_ppfd, time_s)
+            )
+            self.dli_reference.append(self.dli_controller.get_reference_DLI(time_s))
+            self.time_s.append(time_s)
 
-        # Plot PPFD data
-        axs[0].plot(
-            time_plotted,
-            controller_expected_ppfd_stored,
-            label="Controller Expected PPFD",
-        )
-        axs[0].plot(time_plotted, instantenous_ppfd_stored, label="Instantaneous PPFD")
-        axs[0].plot(time_plotted, controller_output_stored, label="Controller Output")
-        axs[0].plot(time_plotted, tot_output_stored, label="Total Output")
-        axs[0].set(ylabel="PPFD (umol/(m^2*s))")
+    def plot(self):
+        fig, axs = plt.subplots(2, 1, figsize=(10, 10))
+        axs[0].plot(self.time_s, self.dli_reference, label="DLI Reference")
+        axs[0].plot(self.time_s, self.received_dli, label="Received DLI")
+        axs[0].set_ylabel("DLI (mol/m^2)")
         axs[0].legend()
 
-        # Plot DLI accumulator
-        axs[1].plot(time_plotted, dli_accumulator_stored, label="DLI Accumulator")
-        axs[1].plot(time_plotted, dli_controller.stored_dli_error, label="DLI Error")
-        axs[1].axhline(y=DLI_SETPOINT, color="r", linestyle="-", label="Reference DLI")
-        axs[1].set(ylabel="DLI (mol/m^2)")
+        axs[1].plot(self.time_s, self.measured_ppfd, label="Measured PPFD")
+        axs[1].plot(self.time_s, self.controller_output, label="Controller Output")
+        axs[1].plot(
+            self.time_s, self.sunlight_injected_ppfd, label="Sunlight Injected PPFD"
+        )
+        axs[1].set_ylabel("PPFD (umol/(m^2*s))")
         axs[1].legend()
 
-        plt.xlabel("Time (h)")
         plt.show()
 
 
 if __name__ == "__main__":
-    dli_controller = DLIController()
-    simulator = Simulator(
-        dli_controller,
-        DLI_SETPOINT,
-        controller_ontime_interval_h,
-        TIME_DAY_H,
-        CYCLE_START_TIME_H,
+    sunlight_model_time_vectors = [
+        0,
+        6 * SECONDS_PER_HOUR,
+        12 * SECONDS_PER_HOUR,
+        14 * SECONDS_PER_HOUR,
+        15 * SECONDS_PER_HOUR,
+        18 * SECONDS_PER_HOUR,
+        20 * SECONDS_PER_HOUR,
+    ]
+    sunlight_model_ppfd_vectors = [0, 130, 130, 380, 240, 30, 0]
+    sunlight_model = SunlightModel(
+        sunlight_model_time_vectors, sunlight_model_ppfd_vectors
     )
+
+    dli_controller = DLIController(
+        CONTROLLER_ONTIME_S, 6 * SECONDS_PER_HOUR, DLI_SETPOINT
+    )
+    simulator = Simulator(dli_controller, sunlight_model)
     simulator.simulate()
+    simulator.plot()
