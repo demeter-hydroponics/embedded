@@ -5,6 +5,7 @@
 #include "CommManagerTypes.hpp"
 #include "HallTach.hpp"
 #include "MessageQueue.hpp"
+#include "time.hpp"
 
 class BasePumpDevice {
    public:
@@ -32,13 +33,14 @@ class PumpDevice : public BasePumpDevice {
    public:
     /**
      * @brief Construct a new Pump Device object
+     * @param timeSerer The time server
      * @param messageQueue The message queue to send data to the communication manager
      * @param primaryPump The primary pump
      * @param secondaryPump The secondary pump
      * @param waterValve The water valve
      */
-    PumpDevice(MessageQueue<CommManagerQueueData_t>& messageQueue, BaseBinaryLoad& primaryPump, BaseBinaryLoad& secondaryPump,
-               BaseBinaryLoad& waterValve);
+    PumpDevice(TimeServer& timeServer, MessageQueue<CommManagerQueueData_t>& messageQueue, BaseBinaryLoad& primaryPump,
+               BaseBinaryLoad& secondaryPump, BaseBinaryLoad& waterValve);
 
     /**
      * @brief Run the pump device
@@ -93,6 +95,7 @@ class PumpDevice : public BasePumpDevice {
     ErrorCode controlWaterValue(bool enable) override;
 
    private:
+    TimeServer& timeServer_;
     MessageQueue<CommManagerQueueData_t>& messageQueue_;
     BaseBinaryLoad& primaryPump_;
     BaseBinaryLoad& secondaryPump_;

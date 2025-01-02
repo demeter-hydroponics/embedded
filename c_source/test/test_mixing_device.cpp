@@ -5,6 +5,7 @@
 #include "MixingDevice.hpp"
 #include "MockMessageQueue.hpp"
 #include "MockTDS.hpp"
+#include "MockTime.hpp"
 #include "MockpH.hpp"
 #include "pump/mixing_stats.pb.h"
 #include "util.hpp"
@@ -13,7 +14,8 @@ TEST(MixingDeviceTest, TestReadAndPbOutput) {
     MockpHSense phSense;
     MockTDSSense TDSSense;
     MockMessageQueue<CommManagerQueueData_t> messageQueue;
-    MixingDevice mixingDevice(phSense, &TDSSense, messageQueue);
+    MockTimeServer timeServer;
+    MixingDevice mixingDevice(timeServer, phSense, &TDSSense, messageQueue);
 
     // expect the pH sensor to be read, return a pH
     EXPECT_CALL(phSense, get_pH(testing::_))
@@ -29,6 +31,9 @@ TEST(MixingDeviceTest, TestReadAndPbOutput) {
     EXPECT_CALL(phSense, get_rawVoltage(testing::_))
         .WillOnce(testing::DoAll(testing::SetArgReferee<0>(1.0f), testing::Return(BasepHSense::ErrorCode::NO_ERROR)));
 
+    EXPECT_CALL(timeServer, getUClockUs(testing::_))
+        .WillOnce(testing::DoAll(testing::SetArgReferee<0>(58123), testing::Return(true)));
+
     // create a fake mixing stats message
     MixingTankStats mixingTankStats;
     mixingTankStats.TDSSense.TDSSensePPM = 200.0;
@@ -41,6 +46,7 @@ TEST(MixingDeviceTest, TestReadAndPbOutput) {
     CommManagerQueueData_t expected_data;
     expected_data.header.channel = MessageChannels_MIXING_STATS;
     expected_data.header.length = MixingTankStats_size;
+    expected_data.header.timestamp = 58123;
     uint8_t* buffer = static_cast<uint8_t*>(expected_data.data);
     pb_ostream_t ostream = pb_ostream_from_buffer(buffer, MixingTankStats_size);
     IGNORE(pb_encode(&ostream, MixingTankStats_fields, &mixingTankStats));
@@ -58,6 +64,8 @@ TEST(MixingDeviceTest, TestReadAndPbOutput) {
 
     // Check that the message sent is the same as the message created
     EXPECT_EQ(expected_data.header.channel, received_data.header.channel);
+    EXPECT_EQ(expected_data.header.length, received_data.header.length);
+    EXPECT_EQ(expected_data.header.timestamp, received_data.header.timestamp);
 
     // Check that pH and TDS sensor values are passed through
     float pH = 0.0f;
@@ -71,7 +79,8 @@ TEST(MixingDeviceTest, TestReadAndPbOutput) {
 TEST(MixingDeviceTest, NoTdsNoCrash) {
     MockpHSense phSense;
     MockMessageQueue<CommManagerQueueData_t> messageQueue;
-    MixingDevice mixingDevice(phSense, nullptr, messageQueue);
+    MockTimeServer timeServer;
+    MixingDevice mixingDevice(timeServer, phSense, nullptr, messageQueue);
 
     // expect the pH sensor to be read, return a pH
     EXPECT_CALL(phSense, get_pH(testing::_))
@@ -80,6 +89,9 @@ TEST(MixingDeviceTest, NoTdsNoCrash) {
     // expect the raw voltage to be read, return a voltage of 1.0f
     EXPECT_CALL(phSense, get_rawVoltage(testing::_))
         .WillOnce(testing::DoAll(testing::SetArgReferee<0>(1.0f), testing::Return(BasepHSense::ErrorCode::NO_ERROR)));
+
+    EXPECT_CALL(timeServer, getUClockUs(testing::_))
+        .WillOnce(testing::DoAll(testing::SetArgReferee<0>(58123), testing::Return(true)));
 
     // create a fake mixing stats message
     MixingTankStats mixingTankStats;
@@ -93,6 +105,7 @@ TEST(MixingDeviceTest, NoTdsNoCrash) {
     CommManagerQueueData_t expected_data;
     expected_data.header.channel = MessageChannels_MIXING_STATS;
     expected_data.header.length = MixingTankStats_size;
+    expected_data.header.timestamp = 58123;
     uint8_t* buffer = static_cast<uint8_t*>(expected_data.data);
     pb_ostream_t ostream = pb_ostream_from_buffer(buffer, MixingTankStats_size);
     IGNORE(pb_encode(&ostream, MixingTankStats_fields, &mixingTankStats));
@@ -110,6 +123,8 @@ TEST(MixingDeviceTest, NoTdsNoCrash) {
 
     // Check that the message sent is the same as the message created
     EXPECT_EQ(expected_data.header.channel, received_data.header.channel);
+    EXPECT_EQ(expected_data.header.length, received_data.header.length);
+    EXPECT_EQ(expected_data.header.timestamp, received_data.header.timestamp);
 
     float TDS = 0.0f;
     EXPECT_EQ(mixingDevice.get_TDS(TDS), MixingDevice::ErrorCode::TDS_READ_ERROR);

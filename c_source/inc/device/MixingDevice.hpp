@@ -6,15 +6,18 @@
 #include "TDSSense.hpp"
 #include "pHSense.hpp"
 #include "pump/mixing_stats.pb.h"
+#include "time.hpp"
 
 class MixingDevice {
    public:
     /**
      * @brief Construct a new Mixing Device object
+     * @param timeServer The time server
      * @param pHSense The pH sensor
      * @param TDSSense The TDS sensor
      */
-    MixingDevice(BasepHSense& pHSense, BaseTDSSense* TDSSense, MessageQueue<CommManagerQueueData_t>& messageQueue);
+    MixingDevice(TimeServer& timeServer, BasepHSense& pHSense, BaseTDSSense* TDSSense,
+                 MessageQueue<CommManagerQueueData_t>& messageQueue);
 
     /**
      * @brief The error codes for the mixing device
@@ -46,6 +49,7 @@ class MixingDevice {
     ErrorCode get_TDS(float& TDS);
 
    private:
+    TimeServer& timeServer_;
     BasepHSense& pHSense_;
     BaseTDSSense* TDSSense_;
     MessageQueue<CommManagerQueueData_t>& messageQueue_;

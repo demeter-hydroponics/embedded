@@ -2,11 +2,16 @@
 
 #include "pb_encode.h"
 #include "pump/pump_device.pb.h"
+#include "time.hpp"
 #include "util.hpp"
 
-PumpDevice::PumpDevice(MessageQueue<CommManagerQueueData_t>& messageQueue, BaseBinaryLoad& primaryPump,
+PumpDevice::PumpDevice(TimeServer& timeServer, MessageQueue<CommManagerQueueData_t>& messageQueue, BaseBinaryLoad& primaryPump,
                        BaseBinaryLoad& secondaryPump, BaseBinaryLoad& waterValve)
-    : messageQueue_(messageQueue), primaryPump_(primaryPump), secondaryPump_(secondaryPump), waterValve_(waterValve) {}
+    : timeServer_(timeServer),
+      messageQueue_(messageQueue),
+      primaryPump_(primaryPump),
+      secondaryPump_(secondaryPump),
+      waterValve_(waterValve) {}
 
 PumpDevice::ErrorCode PumpDevice::run() {
     PumpTankStats pumpTankStats;
@@ -16,6 +21,7 @@ PumpDevice::ErrorCode PumpDevice::run() {
 
     CommManagerQueueData_t msg;
     msg.header.channel = MessageChannels_PUMP_STATS;
+    IGNORE(timeServer_.getUClockUs(msg.header.timestamp));
     msg.header.length = PumpTankStats_size;
 
     uint8_t* buffer = static_cast<uint8_t*>(msg.data);

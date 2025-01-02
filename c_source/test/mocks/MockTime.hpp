@@ -4,9 +4,10 @@
 #include "gmock/gmock.h"
 #include "time.hpp"
 
-class TimeServerMock : public TimeServer {
+class MockTimeServer : public TimeServer {
    public:
     MOCK_METHOD(utime_t, getUtimeUs, (), (override));
+    MOCK_METHOD(bool, getUClockUs, (utime_t&), (override));
 };
 
 #endif  // TIME_SERVER_MOCK_HPP
