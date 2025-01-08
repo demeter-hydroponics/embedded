@@ -2,6 +2,7 @@
 
 #include "CommManager.hpp"
 #include "ESPHAL_ADC.hpp"
+#include "ESPHAL_I2C.hpp"
 #include "ESPHAL_MessageQueue.hpp"
 #include "ESPHAL_Time.hpp"
 #include "ESPHAL_Websocket.hpp"
@@ -20,6 +21,25 @@ static ESPHAL_Wifi wifi;
 static ESPHAL_Websocket websocket;
 static ESPHAL_MessageQueue<CommManagerQueueData_t, 50> commMessageQueue;
 static CommManager commManager(websocket, commMessageQueue);
+
+static const i2c_master_bus_config_t i2c_bus_0_config = {
+    .i2c_port = I2C_NUM_0,
+    .sda_io_num = (gpio_num_t)27,
+    .scl_io_num = (gpio_num_t)26,
+    .clk_source = I2C_CLK_SRC_DEFAULT,
+    .glitch_ignore_cnt = 7,
+};
+
+static const i2c_master_bus_config_t i2c_bus_1_config = {
+    .i2c_port = I2C_NUM_1,
+    .sda_io_num = (gpio_num_t)25,
+    .scl_io_num = (gpio_num_t)33,
+    .clk_source = I2C_CLK_SRC_DEFAULT,
+    .glitch_ignore_cnt = 7,
+};
+
+static ESPHAL_I2C i2c0(i2c_bus_0_config, 400000U);
+static ESPHAL_I2C i2c1(i2c_bus_1_config, 400000U);
 
 static uint8_t active_channels[] = {1, 2};  // Channel 1 for the pH sensor, Channel 2 for the TDS sensor
 static ESPHAL_ADC adc1(ADC_UNIT_1, active_channels, sizeof(active_channels) / sizeof(active_channels[0]));
@@ -56,6 +76,10 @@ void app_run() {
     esp_log_level_set(TAG, ESP_LOG_DEBUG);
 
     adc1.init();
+
+    // Initialize the I2C
+    i2c0.init();
+    i2c1.init();
 
     // Initialize the wifi
     wifi.init();
