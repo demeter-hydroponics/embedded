@@ -23,7 +23,7 @@ file(GLOB_RECURSE MESSAGES_SOURCES "${MESSAGES_DIR}/**/*.c")
 list(FILTER HIGH_LEVEL_SOURCES EXCLUDE REGEX "${APPLICATION_DIR}/test/.*\\.cpp$")
 
 # Enable Werror for ESP32HAL
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wno-error=missing-field-initializers -Wno-missing-field-initializers")
 
 idf_component_register(SRCS "pump-controller.c"
                     "app_pump.cpp"
