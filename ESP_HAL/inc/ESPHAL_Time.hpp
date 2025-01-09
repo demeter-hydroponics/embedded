@@ -15,6 +15,8 @@ class ESPHAL_TimeServer : public TimeServer {
 
     bool getUClockUs(utime_t& uclock) override;
 
+    void delayUs(utime_t delay) override;
+
    private:
     sntp_sync_status_t sntp_status_ = SNTP_SYNC_STATUS_RESET;
 };

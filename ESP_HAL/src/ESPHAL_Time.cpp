@@ -33,3 +33,10 @@ bool ESPHAL_TimeServer::getUClockUs(utime_t& uclock) {
 
     return ret;
 }
+
+void ESPHAL_TimeServer::delayUs(utime_t delay) {
+    const utime_t start = getUtimeUs();
+    while (getUtimeUs() < start + delay) {
+        // Do nothing
+    }
+}

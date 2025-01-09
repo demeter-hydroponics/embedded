@@ -17,6 +17,13 @@ class TimeServer {
      * @return true if the time was successfully retrieved, false otherwise
      */
     virtual bool getUClockUs(utime_t& utime) = 0;
+
+    /**
+     * @brief Delay for a given number of microseconds
+     *
+     * @param delay The number of microseconds to delay
+     */
+    virtual void delayUs(utime_t delay) = 0;
 };
 
 #endif  // TIME_HPP

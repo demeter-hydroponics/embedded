@@ -11,6 +11,7 @@ class HAL_GPIO {
     enum class ErrorCode {
         NO_ERROR,
         INVALID_OPERATION,
+        HAL_ERROR,
     };
 
     enum class PinMode {
