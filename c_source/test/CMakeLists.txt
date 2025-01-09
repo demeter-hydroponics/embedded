@@ -5,7 +5,7 @@ set(This c_source_tests)
 project(${This} C CXX)
 
 # Specify the C and C++ standards
-set(CMAKE_CXX_STANDARD 14) # Ensure at least C++14
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Compiler flags
