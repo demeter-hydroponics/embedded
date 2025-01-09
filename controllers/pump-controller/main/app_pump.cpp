@@ -8,6 +8,7 @@
 #include "ESPHAL_Websocket.hpp"
 #include "ESPHAL_Wifi.hpp"
 #include "MixingDevice.hpp"
+#include "POLOLU_VL53L0X.hpp"
 #include "TDSSense.hpp"
 #include "config.h"
 #include "esp_log.h"
@@ -40,6 +41,8 @@ static const i2c_master_bus_config_t i2c_bus_1_config = {
 
 static ESPHAL_I2C i2c0(i2c_bus_0_config, 400000U);
 static ESPHAL_I2C i2c1(i2c_bus_1_config, 400000U);
+
+static VL53L0X reservoirWaterLevelSensor(i2c0, timeServer);
 
 static uint8_t active_channels[] = {1, 2};  // Channel 1 for the pH sensor, Channel 2 for the TDS sensor
 static ESPHAL_ADC adc1(ADC_UNIT_1, active_channels, sizeof(active_channels) / sizeof(active_channels[0]));
@@ -85,6 +88,13 @@ void app_run() {
     wifi.init();
     websocket.init(uri);
     timeServer.init();
+
+    // init TOF after timeserver and I2C
+    if (reservoirWaterLevelSensor.init()) {
+        reservoirWaterLevelSensor.startContinuous(0U);
+    } else {
+        ESP_LOGE(TAG, "Failed to initialize the TOF sensor");
+    }
 
     while (sntp_get_sync_status() != SNTP_SYNC_STATUS_COMPLETED) {
         ESP_LOGW(TAG, "Waiting for time to be synchronized...");
