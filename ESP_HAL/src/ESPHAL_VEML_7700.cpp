@@ -14,7 +14,10 @@ VEML7700::ErrorCode VEML7700::getLightLux(float& light) {
     ErrorCode error = initialized_ ? ErrorCode::NO_ERROR : ErrorCode::NOT_INITIALIZED;
 
     if (error == ErrorCode::NO_ERROR) {
-        esp_err_t read_result = veml7700_read_als_lux_auto(&dev_, &light);
+        double readLux;
+        esp_err_t read_result = veml7700_read_als_lux_auto(dev_, &readLux);
+
+        light = readLux;
 
         error = read_result == ESP_OK ? ErrorCode::NO_ERROR : ErrorCode::COMM_ERROR;
     }
