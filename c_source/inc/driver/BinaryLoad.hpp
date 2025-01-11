@@ -4,7 +4,7 @@
 
 #include "HAL_ADC.hpp"
 #include "HAL_GPIO.hpp"
-#include "pump/pump_device.pb.h"
+#include "column/pump_metrics.pb.h"
 
 class BaseBinaryLoad {
    public:

@@ -4,9 +4,9 @@
 #include "MockMessageQueue.hpp"
 #include "MockTime.hpp"
 #include "PumpDevice.hpp"
+#include "column/pump_metrics.pb.h"
 #include "pb.h"
 #include "pb_encode.h"
-#include "pump/pump_device.pb.h"
 #include "util.hpp"
 
 using namespace ::testing;

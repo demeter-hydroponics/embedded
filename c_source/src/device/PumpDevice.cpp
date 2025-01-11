@@ -1,7 +1,7 @@
 #include "PumpDevice.hpp"
 
+#include "column/pump_metrics.pb.h"
 #include "pb_encode.h"
-#include "pump/pump_device.pb.h"
 #include "time.hpp"
 #include "util.hpp"
 

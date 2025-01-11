@@ -7,7 +7,7 @@
 #include "MockTDS.hpp"
 #include "MockTime.hpp"
 #include "MockpH.hpp"
-#include "pump/mixing_stats.pb.h"
+#include "column/mixing_metrics.pb.h"
 #include "util.hpp"
 
 TEST(MixingDeviceTest, TestReadAndPbOutput) {

@@ -64,11 +64,14 @@ void ESPHAL_Websocket::event_handler(void *arg, esp_event_base_t event_base, int
             instance->state_ = State::NOT_CONNECTED;
             break;
         case WEBSOCKET_EVENT_DATA: {
-            instance->event_receive_working_data.length = data->data_len;
-            ESP_LOGI(TAG, "Received data of length %d", data->data_len);
-            memcpy(instance->event_receive_working_data.data, data->data_ptr, data->data_len);
-            if (xQueueSend(instance->receive_queue, &instance->event_receive_working_data, 0U) != pdTRUE) {
-                ESP_LOGE(TAG, "Failed to send data of length %d to receive queue", data->data_len);
+            if (data->data_len >= 10U)  // arbitrary threshold
+            {
+                instance->event_receive_working_data.length = data->data_len;
+                ESP_LOGI(TAG, "Received data of length %d", data->data_len);
+                memcpy(instance->event_receive_working_data.data, data->data_ptr, data->data_len);
+                if (xQueueSend(instance->receive_queue, &instance->event_receive_working_data, 0U) != pdTRUE) {
+                    ESP_LOGE(TAG, "Failed to send data of length %d to receive queue", data->data_len);
+                }
             }
         } break;
         case WEBSOCKET_EVENT_ERROR:
