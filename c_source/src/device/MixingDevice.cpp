@@ -3,9 +3,9 @@
 #include "CommManagerTypes.hpp"
 #include "MessageQueue.hpp"
 #include "TDSSense.hpp"
+#include "column/mixing_metrics.pb.h"
 #include "pHSense.hpp"
 #include "pb_encode.h"
-#include "pump/mixing_stats.pb.h"
 #include "util.hpp"
 
 MixingDevice::MixingDevice(TimeServer& timeServer, BasepHSense& pHSense, BaseTDSSense* TDSSense,

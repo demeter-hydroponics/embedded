@@ -110,5 +110,5 @@ void app_run() {
     xTaskCreate(task_50ms_run, "task_50ms_run", 4096, NULL, 5, NULL);
 
     // delete the idle task
-    vTaskDelete(NULL);
+    vTaskDelay(portMAX_DELAY);
 }

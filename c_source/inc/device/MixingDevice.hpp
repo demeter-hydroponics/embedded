@@ -4,8 +4,8 @@
 #include "CommManagerTypes.hpp"
 #include "MessageQueue.hpp"
 #include "TDSSense.hpp"
+#include "column/mixing_metrics.pb.h"
 #include "pHSense.hpp"
-#include "pump/mixing_stats.pb.h"
 #include "time.hpp"
 
 class MixingDevice {
