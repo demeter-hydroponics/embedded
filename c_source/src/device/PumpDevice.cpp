@@ -6,18 +6,25 @@
 #include "util.hpp"
 
 PumpDevice::PumpDevice(TimeServer& timeServer, MessageQueue<CommManagerQueueData_t>& messageQueue, BaseBinaryLoad& primaryPump,
-                       BaseBinaryLoad& secondaryPump, BaseBinaryLoad& waterValve)
+                       BaseBinaryLoad& secondaryPump, BaseBinaryLoad& waterValve,
+                       BaseWaterLevelSense& solutionReservoirWaterLevel, BaseWaterLevelSense& waterFeedReservoirWaterLevel)
     : timeServer_(timeServer),
       messageQueue_(messageQueue),
       primaryPump_(primaryPump),
       secondaryPump_(secondaryPump),
-      waterValve_(waterValve) {}
+      waterValve_(waterValve),
+      solutionReservoirWaterLevel_(solutionReservoirWaterLevel),
+      waterFeedReservoirWaterLevel_(waterFeedReservoirWaterLevel) {}
 
 PumpDevice::ErrorCode PumpDevice::run() {
     PumpTankStats pumpTankStats;
     primaryPump_.populateProtobufMessage(pumpTankStats.primary_pump);
     secondaryPump_.populateProtobufMessage(pumpTankStats.secondary_pump);
     waterValve_.populateProtobufMessage(pumpTankStats.water_valve);
+    pumpTankStats.feed_reservoir_level.level_valid = static_cast<SensorValidity>(
+        waterFeedReservoirWaterLevel_.getWaterInTankL(pumpTankStats.feed_reservoir_level.tank_fluid_volume_L));
+    pumpTankStats.solution_reservoir_level.level_valid = static_cast<SensorValidity>(
+        solutionReservoirWaterLevel_.getWaterInTankL(pumpTankStats.solution_reservoir_level.tank_fluid_volume_L));
 
     CommManagerQueueData_t msg;
     msg.header.channel = MessageChannels_PUMP_STATS;
@@ -106,6 +113,24 @@ PumpDevice::ErrorCode PumpDevice::controlWaterValue(bool enable) {
     PumpDevice::ErrorCode error = PumpDevice::ErrorCode::NO_ERROR;
     if (waterValve_.setEnabled(enable) != BaseBinaryLoad::ErrorCode::NO_ERROR) {
         error = PumpDevice::ErrorCode::LOAD_ACTUATION_ERROR;
+    }
+
+    return error;
+}
+
+PumpDevice::ErrorCode PumpDevice::get_waterLevelSolutionReservoir(float& level) {
+    PumpDevice::ErrorCode error = PumpDevice::ErrorCode::NO_ERROR;
+    if (solutionReservoirWaterLevel_.getWaterInTankL(level) == false) {
+        error = PumpDevice::ErrorCode::SENSOR_READ_ERROR;
+    }
+
+    return error;
+}
+
+PumpDevice::ErrorCode PumpDevice::get_waterLevelWaterFeedReservoir(float& level) {
+    PumpDevice::ErrorCode error = PumpDevice::ErrorCode::NO_ERROR;
+    if (waterFeedReservoirWaterLevel_.getWaterInTankL(level) == false) {
+        error = PumpDevice::ErrorCode::SENSOR_READ_ERROR;
     }
 
     return error;

@@ -5,6 +5,7 @@
 #include "CommManagerTypes.hpp"
 #include "HallTach.hpp"
 #include "MessageQueue.hpp"
+#include "WaterLevelSense.hpp"
 #include "time.hpp"
 
 class BasePumpDevice {
@@ -40,7 +41,8 @@ class PumpDevice : public BasePumpDevice {
      * @param waterValve The water valve
      */
     PumpDevice(TimeServer& timeServer, MessageQueue<CommManagerQueueData_t>& messageQueue, BaseBinaryLoad& primaryPump,
-               BaseBinaryLoad& secondaryPump, BaseBinaryLoad& waterValve);
+               BaseBinaryLoad& secondaryPump, BaseBinaryLoad& waterValve, BaseWaterLevelSense& solutionReservoirWaterLevel,
+               BaseWaterLevelSense& waterFeedReservoirWaterLevel);
 
     /**
      * @brief Run the pump device
@@ -94,12 +96,28 @@ class PumpDevice : public BasePumpDevice {
      */
     ErrorCode controlWaterValue(bool enable) override;
 
+    /**
+     * @brief Get the water level in the solution reservoir
+     * @param level The water level in the solution reservoir
+     * @return Status of the operation
+     */
+    ErrorCode get_waterLevelSolutionReservoir(float& level);
+
+    /**
+     * @brief Get the water level in the water feed reservoir
+     * @param level The water level in the water feed reservoir
+     * @return Status of the operation
+     */
+    ErrorCode get_waterLevelWaterFeedReservoir(float& level);
+
    private:
     TimeServer& timeServer_;
     MessageQueue<CommManagerQueueData_t>& messageQueue_;
     BaseBinaryLoad& primaryPump_;
     BaseBinaryLoad& secondaryPump_;
     BaseBinaryLoad& waterValve_;
+    BaseWaterLevelSense& solutionReservoirWaterLevel_;
+    BaseWaterLevelSense& waterFeedReservoirWaterLevel_;
 };
 
 #endif  // PUMP_DEVICE_HPP

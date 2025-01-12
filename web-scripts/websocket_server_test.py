@@ -37,7 +37,7 @@ def print_messages(frame):
         print(header)
 
         if header.channel == common_pb2.MessageChannels.MIXING_STATS:
-            mixing_stats = mixing_stats_pb2.MixingTankStats()
+            mixing_stats = mixing_metrics_pb2.MixingTankStats()
             mixing_stats.ParseFromString(frame[pointer : pointer + header.length])
             pointer += header.length
             print(mixing_stats)
