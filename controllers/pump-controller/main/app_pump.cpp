@@ -10,6 +10,8 @@
 #include "MixingDevice.hpp"
 #include "POLOLU_VL53L0X.hpp"
 #include "TDSSense.hpp"
+#include "WaterLevelSense.hpp"
+#include "board_config.hpp"
 #include "config.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
@@ -25,24 +27,28 @@ static CommManager commManager(websocket, commMessageQueue);
 
 static const i2c_master_bus_config_t i2c_bus_0_config = {
     .i2c_port = I2C_NUM_0,
-    .sda_io_num = (gpio_num_t)27,
-    .scl_io_num = (gpio_num_t)26,
+    .sda_io_num = (gpio_num_t)COLUMN_I2C0_SDA,
+    .scl_io_num = (gpio_num_t)COLUMN_I2C0_SCL,
     .clk_source = I2C_CLK_SRC_DEFAULT,
     .glitch_ignore_cnt = 7,
 };
 
 static const i2c_master_bus_config_t i2c_bus_1_config = {
     .i2c_port = I2C_NUM_1,
-    .sda_io_num = (gpio_num_t)25,
-    .scl_io_num = (gpio_num_t)33,
+    .sda_io_num = (gpio_num_t)COLUMN_I2C1_SDA,
+    .scl_io_num = (gpio_num_t)COLUMN_I2C1_SCL,
     .clk_source = I2C_CLK_SRC_DEFAULT,
     .glitch_ignore_cnt = 7,
 };
 
-static ESPHAL_I2C i2c0(i2c_bus_0_config, 400000U);
-static ESPHAL_I2C i2c1(i2c_bus_1_config, 400000U);
+static ESPHAL_I2C i2c0(i2c_bus_0_config, I2C_FREQ_HZ);
+static ESPHAL_I2C i2c1(i2c_bus_1_config, I2C_FREQ_HZ);
 
-static VL53L0X reservoirWaterLevelSensor(i2c0, timeServer);
+static VL53L0X solutionReservoirTOF(i2c0, timeServer);
+static VL53L0X waterFeedReservoirTOF(i2c0, timeServer);
+
+static WaterLevelSenseFromTOF reservoirWaterLevelSensor(solutionReservoirTOF, 1.0f, 0.0f);
+static WaterLevelSenseFromTOF waterFeedReservoirSensor(waterFeedReservoirTOF, 1.0f, 0.0f);
 
 static uint8_t active_channels[] = {1, 2};  // Channel 1 for the pH sensor, Channel 2 for the TDS sensor
 static ESPHAL_ADC adc1(ADC_UNIT_1, active_channels, sizeof(active_channels) / sizeof(active_channels[0]));
@@ -58,6 +64,8 @@ void task_10ms_run(void *pvParameters) {
     while (1) {
         pH.poll();
         tds.poll();
+        reservoirWaterLevelSensor.poll();
+        waterFeedReservoirSensor.poll();
         mixingDevice.run();
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
@@ -70,6 +78,20 @@ void task_50ms_run(void *pvParameters) {
         websocket.run();
         wifi.run();
         vTaskDelay(50 / portTICK_PERIOD_MS);
+    }
+}
+
+void TOF_init() {
+    if (solutionReservoirTOF.init()) {
+        solutionReservoirTOF.startContinuous();
+    } else {
+        ESP_LOGE(TAG, "Failed to initialize TOF sensor for solution reservoir");
+    }
+
+    if (waterFeedReservoirTOF.init()) {
+        waterFeedReservoirTOF.startContinuous();
+    } else {
+        ESP_LOGE(TAG, "Failed to initialize TOF sensor for water feed reservoir");
     }
 }
 
@@ -90,11 +112,9 @@ void app_run() {
     timeServer.init();
 
     // init TOF after timeserver and I2C
-    if (reservoirWaterLevelSensor.init()) {
-        reservoirWaterLevelSensor.startContinuous(0U);
-    } else {
-        ESP_LOGE(TAG, "Failed to initialize the TOF sensor");
-    }
+    TOF_init();
+
+    ESP_LOGI(TAG, "HW initialized");
 
     while (sntp_get_sync_status() != SNTP_SYNC_STATUS_COMPLETED) {
         ESP_LOGW(TAG, "Waiting for time to be synchronized...");
