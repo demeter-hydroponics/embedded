@@ -48,7 +48,7 @@ static ESPHAL_I2C i2c0(i2c_bus_0_config, I2C_FREQ_HZ);
 static ESPHAL_I2C i2c1(i2c_bus_1_config, I2C_FREQ_HZ);
 
 static VL53L0X solutionReservoirTOF(i2c0, timeServer);
-static VL53L0X waterFeedReservoirTOF(i2c0, timeServer);
+static VL53L0X waterFeedReservoirTOF(i2c1, timeServer);
 
 static WaterLevelSenseFromTOF reservoirWaterLevelSensor(solutionReservoirTOF, 1.0f, 0.0f);
 static WaterLevelSenseFromTOF waterFeedReservoirSensor(waterFeedReservoirTOF, 1.0f, 0.0f);
@@ -109,12 +109,14 @@ void task_50ms_run(void *pvParameters) {
 
 void TOF_init() {
     if (solutionReservoirTOF.init()) {
+        ESP_LOGI(TAG, "TOF sensor for solution reservoir initialized");
         solutionReservoirTOF.startContinuous();
     } else {
         ESP_LOGE(TAG, "Failed to initialize TOF sensor for solution reservoir");
     }
 
     if (waterFeedReservoirTOF.init()) {
+        ESP_LOGI(TAG, "TOF sensor for water feed reservoir initialized");
         waterFeedReservoirTOF.startContinuous();
     } else {
         ESP_LOGE(TAG, "Failed to initialize TOF sensor for water feed reservoir");

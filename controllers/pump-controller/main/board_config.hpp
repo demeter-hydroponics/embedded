@@ -3,8 +3,8 @@
 
 #include <cstdint>
 
-constexpr uint8_t COLUMN_I2C0_SDA = 21;
-constexpr uint8_t COLUMN_I2C0_SCL = 22;
+constexpr uint8_t COLUMN_I2C0_SDA = 27;
+constexpr uint8_t COLUMN_I2C0_SCL = 26;
 
 constexpr uint8_t COLUMN_I2C1_SDA = 25;
 constexpr uint8_t COLUMN_I2C1_SCL = 33;
