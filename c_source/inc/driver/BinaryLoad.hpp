@@ -63,7 +63,7 @@ class BinaryLoad : public BaseBinaryLoad {
      * @param currentChannel The channel to read the current from
      * @param currentScale The scale factor to convert the ADC voltage to current
      */
-    BinaryLoad(HAL_GPIO& en_GPIO, HAL_GPIO* fault_GPIO, HAL_ADC& ADC, uint8_t currentChannel, float currentScale);
+    BinaryLoad(HAL_GPIO& en_GPIO, HAL_GPIO* fault_GPIO, HAL_ADC* ADC, uint8_t currentChannel, float currentScale);
 
     /**
      * @brief Initialize the binary load
@@ -109,7 +109,7 @@ class BinaryLoad : public BaseBinaryLoad {
    private:
     HAL_GPIO& en_GPIO_;
     HAL_GPIO* fault_GPIO_;
-    HAL_ADC& ADC_;
+    HAL_ADC* ADC_;
 
     HAL_ADC::ErrorCode currentSenseError_ = HAL_ADC::ErrorCode::READ_ERROR;
 

@@ -14,7 +14,8 @@ PumpDevice::PumpDevice(TimeServer& timeServer, MessageQueue<CommManagerQueueData
       secondaryPump_(secondaryPump),
       waterValve_(waterValve),
       solutionReservoirWaterLevel_(solutionReservoirWaterLevel),
-      waterFeedReservoirWaterLevel_(waterFeedReservoirWaterLevel) {}
+      waterFeedReservoirWaterLevel_(waterFeedReservoirWaterLevel),
+      commData_(CommManagerQueueData_t()) {}
 
 PumpDevice::ErrorCode PumpDevice::run() {
     PumpTankStats pumpTankStats;
@@ -26,16 +27,15 @@ PumpDevice::ErrorCode PumpDevice::run() {
     pumpTankStats.solution_reservoir_level.level_valid = static_cast<SensorValidity>(
         solutionReservoirWaterLevel_.getWaterInTankL(pumpTankStats.solution_reservoir_level.tank_fluid_volume_L));
 
-    CommManagerQueueData_t msg;
-    msg.header.channel = MessageChannels_PUMP_STATS;
-    IGNORE(timeServer_.getUClockUs(msg.header.timestamp));
-    msg.header.length = PumpTankStats_size;
+    commData_.header.channel = MessageChannels_PUMP_STATS;
+    IGNORE(timeServer_.getUClockUs(commData_.header.timestamp));
+    commData_.header.length = PumpTankStats_size;
 
-    uint8_t* buffer = static_cast<uint8_t*>(msg.data);
+    uint8_t* buffer = static_cast<uint8_t*>(commData_.data);
     pb_ostream_t ostream = pb_ostream_from_buffer(buffer, PumpTankStats_size);
     IGNORE(pb_encode(&ostream, PumpTankStats_fields, &pumpTankStats));
 
-    IGNORE(messageQueue_.send(msg));
+    IGNORE(messageQueue_.send(commData_));
 
     return ErrorCode::NO_ERROR;
 }

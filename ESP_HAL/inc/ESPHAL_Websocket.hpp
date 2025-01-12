@@ -8,9 +8,9 @@
 #include "freertos/queue.h"
 
 #define WEBSOCKET_MAX_RECEIVE_QUEUE_SIZE 4
-#define WEBSOCKET_MAX_SEND_RECV_FRAME_SIZE_BYTES 512
+#define WEBSOCKET_MAX_SEND_RECV_FRAME_SIZE_BYTES 1024
 
-#define WEBSOCKET_MAX_SEND_QUEUE_SIZE 20
+#define WEBSOCKET_MAX_SEND_QUEUE_SIZE 0
 
 class ESPHAL_Websocket : public TransportLayer {
    public:
@@ -46,15 +46,17 @@ class ESPHAL_Websocket : public TransportLayer {
     QueueHandle_t receive_queue;
     StaticQueue_t receive_queue_buffer;
 
+    uint8_t receive_buffer[sizeof(SendReceiveQueueData) * WEBSOCKET_MAX_RECEIVE_QUEUE_SIZE];
+#if WEBSOCKET_MAX_SEND_QUEUE_SIZE > 0U
+    uint8_t send_buffer[sizeof(SendReceiveQueueData) * WEBSOCKET_MAX_SEND_QUEUE_SIZE];
+    SendReceiveQueueData send_working_data;
+
     QueueHandle_t send_queue;
     StaticQueue_t send_queue_buffer;
-
-    uint8_t receive_buffer[sizeof(SendReceiveQueueData) * WEBSOCKET_MAX_RECEIVE_QUEUE_SIZE];
-    uint8_t send_buffer[sizeof(SendReceiveQueueData) * WEBSOCKET_MAX_SEND_QUEUE_SIZE];
+#endif
 
     SendReceiveQueueData event_receive_working_data;
     SendReceiveQueueData receive_working_data;
-    SendReceiveQueueData send_working_data;
 };
 
 #endif  // ESPHAL_WEBSOCKET_HPP
