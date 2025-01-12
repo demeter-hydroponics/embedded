@@ -118,6 +118,8 @@ class PumpDevice : public BasePumpDevice {
     BaseBinaryLoad& waterValve_;
     BaseWaterLevelSense& solutionReservoirWaterLevel_;
     BaseWaterLevelSense& waterFeedReservoirWaterLevel_;
+
+    CommManagerQueueData_t commData_;
 };
 
 #endif  // PUMP_DEVICE_HPP

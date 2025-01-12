@@ -1,7 +1,9 @@
 #include "app_pump.h"
 
+#include "BinaryLoad.hpp"
 #include "CommManager.hpp"
 #include "ESPHAL_ADC.hpp"
+#include "ESPHAL_GPIO.hpp"
 #include "ESPHAL_I2C.hpp"
 #include "ESPHAL_MessageQueue.hpp"
 #include "ESPHAL_Time.hpp"
@@ -9,6 +11,7 @@
 #include "ESPHAL_Wifi.hpp"
 #include "MixingDevice.hpp"
 #include "POLOLU_VL53L0X.hpp"
+#include "PumpDevice.hpp"
 #include "TDSSense.hpp"
 #include "WaterLevelSense.hpp"
 #include "board_config.hpp"
@@ -22,7 +25,7 @@ static const char *TAG = "PUMP_CONTROLLER_APP_MAIN";
 static ESPHAL_TimeServer timeServer;
 static ESPHAL_Wifi wifi;
 static ESPHAL_Websocket websocket;
-static ESPHAL_MessageQueue<CommManagerQueueData_t, 50> commMessageQueue;
+static ESPHAL_MessageQueue<CommManagerQueueData_t, CommManager::COMM_MANAGER_MAX_MESSAGES_IN_PACKET> commMessageQueue;
 static CommManager commManager(websocket, commMessageQueue);
 
 static const i2c_master_bus_config_t i2c_bus_0_config = {
@@ -50,22 +53,45 @@ static VL53L0X waterFeedReservoirTOF(i2c0, timeServer);
 static WaterLevelSenseFromTOF reservoirWaterLevelSensor(solutionReservoirTOF, 1.0f, 0.0f);
 static WaterLevelSenseFromTOF waterFeedReservoirSensor(waterFeedReservoirTOF, 1.0f, 0.0f);
 
-static uint8_t active_channels[] = {1, 2};  // Channel 1 for the pH sensor, Channel 2 for the TDS sensor
+static uint8_t active_channels[] = {ADC_CHANNEL_PH_SENSE,
+                                    ADC_CHANNEL_TDS_SENSE};  // Channel 1 for the pH sensor, Channel 2 for the TDS sensor
 static ESPHAL_ADC adc1(ADC_UNIT_1, active_channels, sizeof(active_channels) / sizeof(active_channels[0]));
 
-static pHSense pH(adc1, 1, 1.0f, 0.0f);
-static TDSSense tds(adc1, 2, 1.0f, 0.0f);
+static pHSense pH(adc1, ADC_CHANNEL_PH_SENSE, 1.0f, 0.0f);
+static TDSSense tds(adc1, ADC_CHANNEL_TDS_SENSE, 1.0f, 0.0f);
 
 static MixingDevice mixingDevice(timeServer, pH, &tds, commMessageQueue);
+
+static ESPHAL_GPIO primaryMotorEnableGPIO((gpio_num_t)GPIO_PIN_MOTOR_1_EN);
+static ESPHAL_GPIO primaryMotorFaultGPIO((gpio_num_t)GPIO_PIN_MOTOR_1_FAULT);
+static ESPHAL_GPIO primaryMotorSleepGPIO((gpio_num_t)GPIO_PIN_MOTOR_1_NSLEEP);
+static BinaryLoad primaryPump(primaryMotorEnableGPIO, &primaryMotorFaultGPIO, nullptr, 0, 0.0f);
+
+static ESPHAL_GPIO secondaryMotorEnableGPIO((gpio_num_t)GPIO_PIN_MOTOR_2_EN);
+static ESPHAL_GPIO secondaryMotorFaultGPIO((gpio_num_t)GPIO_PIN_MOTOR_2_FAULT);
+static ESPHAL_GPIO secondaryMotorSleepGPIO((gpio_num_t)GPIO_PIN_MOTOR_2_NSLEEP);
+static BinaryLoad secondaryPump(secondaryMotorEnableGPIO, &secondaryMotorFaultGPIO, nullptr, 0, 0.0f);
+
+static ESPHAL_GPIO waterValveGPIO((gpio_num_t)GPIO_PIN_WATER_FEED_VALVE_EN);
+static BinaryLoad waterValve(waterValveGPIO, nullptr, nullptr, 0, 0.0f);
+
+static PumpDevice pumpDevice(timeServer, commMessageQueue, primaryPump, secondaryPump, waterValve, reservoirWaterLevelSensor,
+                             waterFeedReservoirSensor);
 
 static const char *uri = WEBSOCKET_URI;
 
 void task_10ms_run(void *pvParameters) {
     while (1) {
-        pH.poll();
-        tds.poll();
         reservoirWaterLevelSensor.poll();
         waterFeedReservoirSensor.poll();
+        primaryPump.poll();
+        secondaryPump.poll();
+        waterValve.poll();
+
+        pumpDevice.run();
+
+        pH.poll();
+        tds.poll();
         mixingDevice.run();
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
@@ -95,12 +121,25 @@ void TOF_init() {
     }
 }
 
+void binary_load_init() {
+    // init the sleep pins to output and set output to high as binary load does not include sleep functionality
+    primaryMotorSleepGPIO.setPinMode(HAL_GPIO::PinMode::OUTPUT);
+    secondaryMotorSleepGPIO.setPinMode(HAL_GPIO::PinMode::OUTPUT);
+    primaryMotorFaultGPIO.writePin(true);
+    secondaryMotorSleepGPIO.writePin(true);
+
+    primaryPump.init();
+    secondaryPump.init();
+    waterValve.init();
+}
+
 void app_run() {
     // Initialize the logger
     esp_log_level_set("*", ESP_LOG_INFO);
     esp_log_level_set(TAG, ESP_LOG_DEBUG);
 
     adc1.init();
+    binary_load_init();
 
     // Initialize the I2C
     i2c0.init();

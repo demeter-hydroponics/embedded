@@ -6,7 +6,7 @@
 
 #include "common.pb.h"
 
-constexpr size_t COMM_MANAGER_QUEUE_DATA_SIZE = 128;
+constexpr size_t COMM_MANAGER_QUEUE_DATA_SIZE = 256;
 
 typedef struct CommManagerQueueData {
     MessageHeader header;

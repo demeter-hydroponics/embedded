@@ -4,7 +4,7 @@
 #include "pb_encode.h"
 #include "util.hpp"
 
-BinaryLoad::BinaryLoad(HAL_GPIO& en_GPIO, HAL_GPIO* fault_GPIO, HAL_ADC& ADC, uint8_t currentChannel, float currentScale)
+BinaryLoad::BinaryLoad(HAL_GPIO& en_GPIO, HAL_GPIO* fault_GPIO, HAL_ADC* ADC, uint8_t currentChannel, float currentScale)
     : en_GPIO_(en_GPIO), fault_GPIO_(fault_GPIO), ADC_(ADC), currentChannel_(currentChannel), currentScale_(currentScale) {}
 
 BinaryLoad::ErrorCode BinaryLoad::init() {
@@ -28,9 +28,9 @@ BinaryLoad::ErrorCode BinaryLoad::init() {
 BinaryLoad::ErrorCode BinaryLoad::poll() {
     const ErrorCode error = ErrorCode::NO_ERROR;
 
-    if (error == ErrorCode::NO_ERROR) {
+    if (ADC_ != nullptr) {
         float readADC = 0.0F;
-        currentSenseError_ = ADC_.readV(readADC, currentChannel_);
+        currentSenseError_ = ADC_->readV(readADC, currentChannel_);
         if (currentSenseError_ == HAL_ADC::ErrorCode::NO_ERROR) {
             current_ = readADC * currentScale_;
         }
@@ -52,12 +52,14 @@ BinaryLoad::ErrorCode BinaryLoad::setEnabled(bool enable) {
 }
 
 BinaryLoad::ErrorCode BinaryLoad::getCurrent(float& current) {
-    ErrorCode error = ErrorCode::NO_ERROR;
+    ErrorCode error = ADC_ == nullptr ? ErrorCode::NOT_CONFIGURED_ERROR : ErrorCode::NO_ERROR;
 
-    if (currentSenseError_ != HAL_ADC::ErrorCode::NO_ERROR) {
-        error = ErrorCode::CURRENT_SENSE_ERROR;
-    } else {
-        current = current_;
+    if (error == ErrorCode::NO_ERROR) {
+        if (currentSenseError_ != HAL_ADC::ErrorCode::NO_ERROR) {
+            error = ErrorCode::CURRENT_SENSE_ERROR;
+        } else {
+            current = current_;
+        }
     }
 
     return error;

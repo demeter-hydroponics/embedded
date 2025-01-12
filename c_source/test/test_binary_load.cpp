@@ -10,7 +10,7 @@ TEST(BinaryLoadTest, testInitGPIO) {
     MockGPIO mockEnableGPIO;
     MockGPIO mockFaultGPIO;
     MockADC mockADC;
-    BinaryLoad binaryLoad(mockEnableGPIO, &mockFaultGPIO, mockADC, 0, 1.0);
+    BinaryLoad binaryLoad(mockEnableGPIO, &mockFaultGPIO, &mockADC, 0, 1.0);
 
     EXPECT_CALL(mockEnableGPIO, setPinMode(HAL_GPIO::PinMode::OUTPUT)).WillOnce(Return(HAL_GPIO::ErrorCode::NO_ERROR));
 
@@ -25,7 +25,7 @@ TEST(BinaryLoadTest, test_setEnabled) {
     MockGPIO mockEnableGPIO;
     MockGPIO mockFaultGPIO;
     MockADC mockADC;
-    BinaryLoad binaryLoad(mockEnableGPIO, &mockFaultGPIO, mockADC, 0, 1.0);
+    BinaryLoad binaryLoad(mockEnableGPIO, &mockFaultGPIO, &mockADC, 0, 1.0);
 
     EXPECT_CALL(mockEnableGPIO, setPinMode(_)).WillRepeatedly(Return(HAL_GPIO::ErrorCode::NO_ERROR));
 
@@ -44,7 +44,7 @@ TEST(BinaryLoadTest, test_getCurrent) {
     MockGPIO mockEnableGPIO;
     MockGPIO mockFaultGPIO;
     MockADC mockADC;
-    BinaryLoad binaryLoad(mockEnableGPIO, &mockFaultGPIO, mockADC, 3, 7.2);
+    BinaryLoad binaryLoad(mockEnableGPIO, &mockFaultGPIO, &mockADC, 3, 7.2);
 
     EXPECT_CALL(mockEnableGPIO, setPinMode(_)).WillRepeatedly(Return(HAL_GPIO::ErrorCode::NO_ERROR));
 
@@ -68,7 +68,7 @@ TEST(BinaryLoadTest, test_isFaulted) {
     MockGPIO mockEnableGPIO;
     MockGPIO mockFaultGPIO;
     MockADC mockADC;
-    BinaryLoad binaryLoad(mockEnableGPIO, &mockFaultGPIO, mockADC, 3, 7.2);
+    BinaryLoad binaryLoad(mockEnableGPIO, &mockFaultGPIO, &mockADC, 3, 7.2);
 
     EXPECT_CALL(mockEnableGPIO, setPinMode(_)).WillRepeatedly(Return(HAL_GPIO::ErrorCode::NO_ERROR));
 
@@ -89,7 +89,7 @@ TEST(BinaryLoadTest, test_isFaulted) {
 TEST(BinaryLoadTest, test_isFaultedNotConfigured) {
     MockGPIO mockEnableGPIO;
     MockADC mockADC;
-    BinaryLoad binaryLoad(mockEnableGPIO, nullptr, mockADC, 3, 7.2);
+    BinaryLoad binaryLoad(mockEnableGPIO, nullptr, &mockADC, 3, 7.2);
 
     EXPECT_CALL(mockEnableGPIO, setPinMode(_)).WillRepeatedly(Return(HAL_GPIO::ErrorCode::NO_ERROR));
 
@@ -97,4 +97,14 @@ TEST(BinaryLoadTest, test_isFaultedNotConfigured) {
 
     bool fault = false;
     EXPECT_EQ(BinaryLoad::ErrorCode::NOT_CONFIGURED_ERROR, binaryLoad.isFaulted(fault));
+}
+
+TEST(BinaryLoadTest, test_currentNotConfigured) {
+    MockGPIO mockEnableGPIO;
+    BinaryLoad binaryLoad(mockEnableGPIO, nullptr, nullptr, 3, 7.2);
+
+    binaryLoad.init();
+
+    float current = 0.0f;
+    EXPECT_EQ(BinaryLoad::ErrorCode::NOT_CONFIGURED_ERROR, binaryLoad.getCurrent(current));
 }

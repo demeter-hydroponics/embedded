@@ -41,8 +41,10 @@ ESPHAL_Websocket::State ESPHAL_Websocket::init(const char *uri) {
     receive_queue = xQueueCreateStatic(WEBSOCKET_MAX_RECEIVE_QUEUE_SIZE, WEBSOCKET_MAX_SEND_RECV_FRAME_SIZE_BYTES, receive_buffer,
                                        &receive_queue_buffer);
 
+#if WEBSOCKET_MAX_SEND_QUEUE_SIZE > 0U
     send_queue = xQueueCreateStatic(WEBSOCKET_MAX_SEND_QUEUE_SIZE, WEBSOCKET_MAX_SEND_RECV_FRAME_SIZE_BYTES, send_buffer,
                                     &send_queue_buffer);
+#endif
 
     state_ = state;
 
@@ -85,6 +87,7 @@ void ESPHAL_Websocket::event_handler(void *arg, esp_event_base_t event_base, int
 }
 
 ESPHAL_Websocket::State ESPHAL_Websocket::run() {
+#if WEBSOCKET_MAX_SEND_QUEUE_SIZE > 0U
     bool success = false;
 
     SendReceiveQueueData data;
@@ -97,12 +100,13 @@ ESPHAL_Websocket::State ESPHAL_Websocket::run() {
             queueEmpty = true;
         }
     } while ((queueEmpty == false) && success);
-
+#endif
     return state_;
 }
 
 bool ESPHAL_Websocket::send(const uint8_t *buffer, size_t length) {
     bool success = false;
+#if WEBSOCKET_MAX_SEND_QUEUE_SIZE > 0U
     if (state_ == State::CONNECTED) {
         send_working_data.length = length;
         memcpy(send_working_data.data, buffer, length);
@@ -110,6 +114,9 @@ bool ESPHAL_Websocket::send(const uint8_t *buffer, size_t length) {
     } else {
         ESP_LOGE(TAG, "Websocket not connected - unable to send data with length %d", length);
     }
+#else
+    success = (esp_websocket_client_send_bin(websocket_client, (char *)buffer, length, portMAX_DELAY) == ESP_OK);
+#endif
     return success;
 }
 
