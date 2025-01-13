@@ -1,5 +1,6 @@
 #include "app_node.h"
 
+#include "AUTOMOTE_LTR_303.hpp"
 #include "CommManager.hpp"
 #include "ESPHAL_ADC.hpp"
 #include "ESPHAL_I2C.hpp"
@@ -40,16 +41,19 @@ static const i2c_master_bus_config_t i2c_bus_1_config = {
 static ESPHAL_I2C i2c0(i2c_bus_0_config, I2C_FREQ_HZ);
 static ESPHAL_I2C i2c1(i2c_bus_1_config, I2C_FREQ_HZ);
 
-static VEML7700 lightSensor0;
-static VEML7700 lightSensor1;
+static LTR303 lightSensor0(i2c0);
+static LTR303 lightSensor1(i2c1);
 
 static const char *uri = WEBSOCKET_URI;
 
 void task_10ms_run(void *pvParameters) {
     while (1) {
-        float lux0 = 0.0f;
-        if (lightSensor0.getLightLux(lux0) == VEML7700::ErrorCode::NO_ERROR) {
-            ESP_LOGI(TAG, "Light sensor 0: %.3f lux", lux0);
+        float lux = 0.0f;
+        BaseLightSensor::ErrorCode err = lightSensor0.getLightLux(lux);
+        if (err != BaseLightSensor::ErrorCode::NO_ERROR) {
+            ESP_LOGE(TAG, "Failed to read light sensor 0: %d", (int)err);
+        } else {
+            ESP_LOGI(TAG, "Light sensor 0: %f", lux);
         }
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
@@ -65,11 +69,11 @@ void task_50ms_run(void *pvParameters) {
 }
 
 void init_light_sensors() {
-    if (!lightSensor0.init(i2c0.bus_handle_)) {
+    if (!lightSensor0.begin()) {
         ESP_LOGE(TAG, "Failed to initialize light sensor 0");
     }
 
-    if (!lightSensor1.init(i2c1.bus_handle_)) {
+    if (!lightSensor1.begin()) {
         ESP_LOGE(TAG, "Failed to initialize light sensor 1");
     }
 }
