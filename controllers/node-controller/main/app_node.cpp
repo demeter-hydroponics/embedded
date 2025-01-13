@@ -47,6 +47,10 @@ static const char *uri = WEBSOCKET_URI;
 
 void task_10ms_run(void *pvParameters) {
     while (1) {
+        float lux0 = 0.0f;
+        if (lightSensor0.getLightLux(lux0) == VEML7700::ErrorCode::NO_ERROR) {
+            ESP_LOGI(TAG, "Light sensor 0: %.3f lux", lux0);
+        }
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
@@ -57,6 +61,16 @@ void task_50ms_run(void *pvParameters) {
         websocket.run();
         wifi.run();
         vTaskDelay(50 / portTICK_PERIOD_MS);
+    }
+}
+
+void init_light_sensors() {
+    if (!lightSensor0.init(i2c0.bus_handle_)) {
+        ESP_LOGE(TAG, "Failed to initialize light sensor 0");
+    }
+
+    if (!lightSensor1.init(i2c1.bus_handle_)) {
+        ESP_LOGE(TAG, "Failed to initialize light sensor 1");
     }
 }
 
@@ -74,9 +88,7 @@ void app_run() {
     i2c0.init();
     i2c1.init();
 
-    // Initialize the light sensors
-    lightSensor0.init(I2C_NUM_0);
-    lightSensor1.init(I2C_NUM_1);
+    init_light_sensors();
 
     while (sntp_get_sync_status() != SNTP_SYNC_STATUS_COMPLETED) {
         ESP_LOGW(TAG, "Waiting for time to be synchronized...");

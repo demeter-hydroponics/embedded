@@ -17,6 +17,7 @@
  */
 #pragma once
 
+#include "driver/i2c_master.h"
 #include "esp_err.h"
 
 #ifdef __cplusplus
@@ -61,7 +62,7 @@ typedef struct veml7700_privdata_t* veml7700_handle_t;
  *
  * @return esp_err_t
  */
-esp_err_t veml7700_initialize(veml7700_handle_t* dev, int i2c_master_num);
+esp_err_t veml7700_initialize(veml7700_handle_t* dev, i2c_master_bus_handle_t bus_handle);
 
 /**
  * @brief Release any sensor data, freeing up the memory taken by veml7700_initialize.

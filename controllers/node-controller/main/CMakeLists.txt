@@ -15,6 +15,7 @@ set(DEVICE_INC_DIR "${APPLICATION_DIR}/inc/device")
 set(APP_INC_DIR "${APPLICATION_DIR}/inc/app")
 
 file(GLOB HAL_SOURCES "${ESP32HAL_DIR}/src/*.cpp")
+file(GLOB HAL_C_SOURCES "${ESP32HAL_DIR}/src/*.c")
 file(GLOB_RECURSE HIGH_LEVEL_SOURCES "${APPLICATION_DIR}/**/*.cpp")
 file(GLOB PB_SOURCES "${NANOPB_DIR}/*.c")
 file(GLOB COMMON_MSG_SOURCES "${MESSAGES_DIR}/*.c")
@@ -29,6 +30,7 @@ idf_component_register(SRCS "node-controller.c"
                     "app_node.cpp"
                     ${HIGH_LEVEL_SOURCES}
                     ${HAL_SOURCES}
+                    ${HAL_C_SOURCES}
                     ${PB_SOURCES}
                     ${COMMON_MSG_SOURCES}
                     ${MESSAGES_SOURCES}

@@ -8,7 +8,7 @@ class VEML7700 : public BaseLightSensor {
    public:
     VEML7700();
 
-    bool init(int i2c_master_num);
+    bool init(i2c_master_bus_handle_t i2c_master_handle);
 
     ErrorCode getLightLux(float& light) override;
 
