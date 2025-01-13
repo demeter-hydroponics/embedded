@@ -15,15 +15,16 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
+#include "esp_veml_7700.h"
+
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 #include "esp_log.h"
-#include "veml7700.h"
 
 #define VEML7700_I2C_ADDR UINT8_C(0x10) /*!< Sensor slave I2C address */
 
@@ -119,7 +120,7 @@ const uint8_t veml7700_device_address = VEML7700_I2C_ADDR;
  */
 struct veml7700_privdata_t {
     struct veml7700_config configuration;
-    int i2c_master_num;
+    i2c_master_dev_handle_t dev_handle;
     int addr;
 };
 
@@ -377,25 +378,13 @@ static void increase_resolution(veml7700_handle_t dev) {
  * @return esp_err_t
  */
 static esp_err_t veml7700_i2c_read_reg(veml7700_handle_t dev, uint8_t reg_addr, uint16_t *reg_data) {
-    esp_err_t espRc;
-
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (dev->addr << 1) | I2C_MASTER_WRITE, true);
-    i2c_master_write_byte(cmd, reg_addr, true);
-
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (dev->addr << 1) | I2C_MASTER_READ, true);
-
-    uint8_t read_data[2];
-    i2c_master_read(cmd, read_data, 2, I2C_MASTER_LAST_NACK);
-    i2c_master_stop(cmd);
-
-    espRc = i2c_master_cmd_begin(dev->i2c_master_num, cmd, 2000 / portTICK_PERIOD_MS);
-
-    *reg_data = read_data[0] | (read_data[1] << 8);
-    i2c_cmd_link_delete(cmd);
+    const uint8_t reg_addr_buf[1] = {reg_addr};
+    esp_err_t espRc = i2c_master_transmit(dev->dev_handle, reg_addr_buf, sizeof(reg_addr_buf), 1000);
+    if (espRc == ESP_OK) {
+        uint8_t data[2] = {0};
+        espRc = i2c_master_receive(dev->dev_handle, data, sizeof(data), 1000);
+        *reg_data = data[0] | (data[1] << 8);
+    }
 
     return espRc;
 }
@@ -413,34 +402,27 @@ static esp_err_t veml7700_i2c_read_reg(veml7700_handle_t dev, uint8_t reg_addr, 
  * @return esp_err_t
  */
 static esp_err_t veml7700_i2c_write_reg(veml7700_handle_t dev, uint8_t reg_addr, uint16_t reg_data) {
-    esp_err_t espRc;
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    uint8_t data_to_write[3] = {reg_addr, reg_data & 0xFF, (reg_data >> 8) & 0xFF};
 
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (dev->addr << 1) | I2C_MASTER_WRITE, false);
-    i2c_master_write_byte(cmd, reg_addr, false);
-
-    uint8_t write_data[2];
-    write_data[0] = reg_data & 0xff;
-    write_data[1] = (reg_data >> 8) & 0xff;
-    i2c_master_write(cmd, write_data, 2, false);
-
-    i2c_master_stop(cmd);
-
-    espRc = i2c_master_cmd_begin(dev->i2c_master_num, cmd, 1000 / portTICK_PERIOD_MS);
-
-    i2c_cmd_link_delete(cmd);
+    const esp_err_t espRc = i2c_master_transmit(dev->dev_handle, data_to_write, sizeof(data_to_write), 1000);
 
     return espRc;
 }
 
-esp_err_t veml7700_initialize(veml7700_handle_t *dev, int i2c_master_num) {
+esp_err_t veml7700_initialize(veml7700_handle_t *dev, i2c_master_bus_handle_t bus_handle) {
     veml7700_privdata_t *rdev = calloc(sizeof(veml7700_privdata_t), 1);
     if (rdev == NULL) return ESP_ERR_NO_MEM;
     // Define the sensor configuration globally
     rdev->configuration = veml7700_get_default_config();
-    rdev->i2c_master_num = i2c_master_num;
     rdev->addr = VEML7700_I2C_ADDR;
+
+    i2c_device_config_t dev_cfg = {
+        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+        .device_address = VEML7700_I2C_ADDR,
+        .scl_speed_hz = 400000U,
+    };
+
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &dev_cfg, &rdev->dev_handle));
 
     *dev = rdev;
     return veml7700_send_config(rdev);

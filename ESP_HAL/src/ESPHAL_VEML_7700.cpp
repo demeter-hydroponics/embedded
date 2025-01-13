@@ -2,8 +2,8 @@
 
 VEML7700::VEML7700() {}
 
-bool VEML7700::init(int i2c_master_num) {
-    esp_err_t init_result = veml7700_initialize(&dev_, i2c_master_num);
+bool VEML7700::init(i2c_master_bus_handle_t i2c_master_handle) {
+    esp_err_t init_result = veml7700_initialize(&dev_, i2c_master_handle);
 
     initialized_ = init_result == ESP_OK;
 

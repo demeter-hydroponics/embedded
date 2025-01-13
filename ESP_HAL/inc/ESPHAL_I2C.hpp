@@ -11,11 +11,12 @@ class ESPHAL_I2C : public HAL_I2C {
     ErrorCode write(uint8_t address, uint8_t const *const data, size_t length) override;
     ErrorCode read(uint8_t address, uint8_t *const data, size_t length) override;
 
+    i2c_master_bus_handle_t bus_handle_;
+
    private:
     bool initialized_ = false;
     uint32_t freq_;
     i2c_master_bus_config_t bus_config_;
-    i2c_master_bus_handle_t bus_handle_;
 };
 
 #endif  // ESPHAL_I2C_HPP
