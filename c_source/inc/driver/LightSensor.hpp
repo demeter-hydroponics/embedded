@@ -6,6 +6,7 @@ class BaseLightSensor {
     enum class ErrorCode {
         NO_ERROR,
         COMM_ERROR,
+        NEW_DATA_NOT_AVAILABLE,
         NOT_INITIALIZED,
     };
 
