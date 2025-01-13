@@ -1,6 +1,6 @@
 #include "app_node.h"
 
-#include "AUTOMOTE_LTR_303.hpp"
+#include "CDFER_LTR303.hpp"
 #include "CommManager.hpp"
 #include "ESPHAL_ADC.hpp"
 #include "ESPHAL_I2C.hpp"
@@ -48,13 +48,6 @@ static const char *uri = WEBSOCKET_URI;
 
 void task_10ms_run(void *pvParameters) {
     while (1) {
-        float lux = 0.0f;
-        BaseLightSensor::ErrorCode err = lightSensor0.getLightLux(lux);
-        if (err != BaseLightSensor::ErrorCode::NO_ERROR) {
-            ESP_LOGE(TAG, "Failed to read light sensor 0: %d", (int)err);
-        } else {
-            ESP_LOGI(TAG, "Light sensor 0: %f", lux);
-        }
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
@@ -69,11 +62,15 @@ void task_50ms_run(void *pvParameters) {
 }
 
 void init_light_sensors() {
-    if (!lightSensor0.begin()) {
+    ltr303Gain gain = GAIN_1X;
+    ltr303Exposure exposure = EXPOSURE_100ms;
+    bool enableAutoGain = true;
+
+    if (lightSensor0.begin(gain, exposure, enableAutoGain) != 0U) {
         ESP_LOGE(TAG, "Failed to initialize light sensor 0");
     }
 
-    if (!lightSensor1.begin()) {
+    if (lightSensor1.begin(gain, exposure, enableAutoGain) != 0U) {
         ESP_LOGE(TAG, "Failed to initialize light sensor 1");
     }
 }
@@ -92,12 +89,12 @@ void app_run() {
     i2c0.init();
     i2c1.init();
 
-    init_light_sensors();
-
     while (sntp_get_sync_status() != SNTP_SYNC_STATUS_COMPLETED) {
         ESP_LOGW(TAG, "Waiting for time to be synchronized...");
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
+
+    init_light_sensors();
 
     utime_t uclock;
     timeServer.getUClockUs(uclock);
