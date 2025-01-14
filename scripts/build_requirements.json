@@ -21,6 +21,7 @@
         "gdb",
         "doxygen",
         "cpputest",
-        "protobuf-compiler"
+        "protobuf-compiler",
+        "ccache"
     ]
 }
