@@ -34,11 +34,11 @@ endif()
 # Compiler flags
 # ------------------------------------------------------------------------
 set(CMAKE_C_FLAGS
-    "${CMAKE_C_FLAGS} -Og -g -Werror -Wextra -Wall -pedantic -pedantic-errors \
+    "${CMAKE_C_FLAGS} -O0 -g -Werror -Wextra -Wall -pedantic -pedantic-errors \
      -Wfloat-equal -Wredundant-decls -Wswitch-default -Wconversion")
 
 set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -Og -g -Werror -Wextra -Wall -pedantic -pedantic-errors")
+    "${CMAKE_CXX_FLAGS} -O0 -g -Werror -Wextra -Wall -pedantic -pedantic-errors")
 
 add_definitions(-DUNIT_TEST)
 

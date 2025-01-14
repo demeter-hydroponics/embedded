@@ -42,6 +42,7 @@ EXCLUDED_CHECKS = [
     "modernize-avoid-c-arrays",
     "cppcoreguidelines-pro-bounds-constant-array-index",
     "readability-convert-member-functions-to-static",
+    "cppcoreguidelines-avoid-do-while",
 ]
 
 # Build include directories string for the clang-tidy command

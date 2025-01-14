@@ -4,6 +4,7 @@
 #include "CommManager.hpp"
 #include "MockMessageQueue.hpp"
 #include "MockTransportLayer.hpp"
+#include "column/commands.pb.h"
 #include "util.hpp"
 
 using namespace ::testing;
@@ -11,7 +12,8 @@ using namespace ::testing;
 TEST(CommManagerTest, TestCommManagerPollEmptyQueue) {
     MockTransportLayer transport_layer;
     MockMessageQueue<CommManagerQueueData_t> message_queue;
-    CommManager comm_manager(transport_layer, message_queue);
+    MockMessageQueue<SetPumpStateCommand> set_pump_state_command_queue;
+    CommManager comm_manager(transport_layer, message_queue, &set_pump_state_command_queue);
 
     EXPECT_CALL(transport_layer, send).Times(0);
     EXPECT_CALL(message_queue, receive).Times(1);
@@ -22,7 +24,8 @@ TEST(CommManagerTest, TestCommManagerPollEmptyQueue) {
 TEST(CommManagerTest, TestCommManagerPollQueue) {
     MockTransportLayer transport_layer;
     MockMessageQueue<CommManagerQueueData_t> message_queue;
-    CommManager comm_manager(transport_layer, message_queue);
+    MockMessageQueue<SetPumpStateCommand> set_pump_state_command_queue;
+    CommManager comm_manager(transport_layer, message_queue, &set_pump_state_command_queue);
 
     CommManagerQueueData_t data;
     data.header.channel = MessageChannels_MIXING_STATS;
@@ -57,7 +60,8 @@ TEST(CommManagerTest, TestCommManagerPollQueue) {
 TEST(CommManagerTest, MultipleElementsInQueue) {
     MockTransportLayer transport_layer;
     MockMessageQueue<CommManagerQueueData_t> message_queue;
-    CommManager comm_manager(transport_layer, message_queue);
+    MockMessageQueue<SetPumpStateCommand> set_pump_state_command_queue;
+    CommManager comm_manager(transport_layer, message_queue, &set_pump_state_command_queue);
 
     CommManagerQueueData_t data1;
     data1.header.channel = MessageChannels_MIXING_STATS;
@@ -104,4 +108,42 @@ TEST(CommManagerTest, MultipleElementsInQueue) {
     comm_manager.run();
 
     EXPECT_THAT(sent_buffer, ElementsAreArray(expected_buffer));
+}
+
+TEST(CommManagerTest, receive_and_marshall_pump_command) {
+    MockTransportLayer transport_layer;
+    MockMessageQueue<CommManagerQueueData_t> message_queue;
+    MockMessageQueue<SetPumpStateCommand> set_pump_state_command_queue;
+    CommManager comm_manager(transport_layer, message_queue, &set_pump_state_command_queue);
+
+    uint8_t frame[MessageHeader_size + SetPumpStateCommand_size] = {0};
+    pb_ostream_t ostream = pb_ostream_from_buffer(frame, sizeof(frame));
+
+    SetPumpStateCommand command;
+    command.State = PumpState_PUMP_ON;
+    command.SelectedPump = PumpType_PRIMARY;
+
+    MessageHeader header;
+    header.channel = MessageChannels_SET_PUMP_STATE_COMMAND;
+    size_t command_size = 0;
+    IGNORE(pb_get_encoded_size(&command_size, SetPumpStateCommand_fields, &command));
+    header.length = command_size;
+    header.timestamp = 0;
+
+    pb_encode(&ostream, MessageHeader_fields, &header);
+    pb_encode(&ostream, SetPumpStateCommand_fields, &command);
+
+    // Expect a call to receive a frame from the transport layer
+    EXPECT_CALL(transport_layer, receive(_, _))
+        .WillOnce(DoAll(SetArrayArgument<0>(frame, frame + ostream.bytes_written), Return(ostream.bytes_written)))
+        .WillRepeatedly(Return(0));
+
+    // Expect a call to send the frame to the set pump state command queue
+    EXPECT_CALL(set_pump_state_command_queue, send(_)).WillOnce(Invoke([&command](const SetPumpStateCommand& received_command) {
+        EXPECT_EQ(received_command.State, command.State);
+        EXPECT_EQ(received_command.SelectedPump, command.SelectedPump);
+        return true;
+    }));
+
+    comm_manager.run();
 }

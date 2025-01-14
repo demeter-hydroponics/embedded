@@ -8,10 +8,37 @@
 #include "TransportLayer.hpp"
 #include "common.pb.h"
 #include "pb.h"
+#include "pb_decode.h"
 #include "pb_encode.h"
 
-CommManager::CommManager(TransportLayer& transport_layer, MessageQueue<CommManagerQueueData_t>& message_queue)
-    : transport_layer_(transport_layer), message_queue_(message_queue) {}
+CommManager::CommManager(TransportLayer& transport_layer, MessageQueue<CommManagerQueueData_t>& send_message_queue,
+                         MessageQueue<SetPumpStateCommand>* set_pump_state_command_queue)
+    : transport_layer_(transport_layer),
+      message_queue_(send_message_queue),
+      set_pump_state_command_queue_(set_pump_state_command_queue) {}
+
+bool CommManager::process_message(MessageChannels channel, uint8_t* buf, size_t len) {
+    pb_istream_t istream = pb_istream_from_buffer(buf, len);
+    bool ret = true;
+    // Decode the message
+    switch (channel) {
+        case MessageChannels_SET_PUMP_STATE_COMMAND: {
+            SetPumpStateCommand command = SetPumpStateCommand_init_zero;
+            if (pb_decode(&istream, SetPumpStateCommand_fields, &command)) {
+                if (set_pump_state_command_queue_ != nullptr) {
+                    set_pump_state_command_queue_->send(command);
+                }
+            } else {
+                ret = false;
+            }
+            break;
+        }
+        default:
+            break;
+    }
+
+    return ret;
+}
 
 void CommManager::run() {
     // clear the buffer
@@ -43,6 +70,31 @@ void CommManager::run() {
     if (bytes_written_to_packet_ > 0) {
         send_packet();
     }
+
+    uint8_t commandBuffer[CommManager::COMM_MANAGER_MAX_RX_PACKET_SIZE] = {0};
+    size_t bytes_received = 0;
+
+    do {
+        bytes_received = transport_layer_.receive(static_cast<uint8_t*>(commandBuffer), sizeof(commandBuffer));
+        size_t bytes_processed = 0;
+        pb_istream_t istream = pb_istream_from_buffer(static_cast<uint8_t*>(commandBuffer), MessageHeader_size);
+
+        while (bytes_processed < bytes_received) {
+            // Decode the message header
+            MessageHeader header = MessageHeader_init_zero;
+
+            if (pb_decode(&istream, MessageHeader_fields, &header) == false) {
+                break;
+            }
+            bytes_processed += MessageHeader_size;
+
+            if (process_message(header.channel, static_cast<uint8_t*>(commandBuffer) + bytes_processed, header.length) == false) {
+                break;
+            }
+            bytes_processed += header.length;
+        }
+
+    } while (bytes_received > 0);
 }
 
 void CommManager::send_packet() {

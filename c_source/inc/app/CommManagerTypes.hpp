@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "MessageQueue.hpp"
 #include "common.pb.h"
 
 constexpr size_t COMM_MANAGER_QUEUE_DATA_SIZE = 256;

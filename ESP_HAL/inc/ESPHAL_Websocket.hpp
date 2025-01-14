@@ -1,6 +1,7 @@
 #ifndef ESPHAL_WEBSOCKET_HPP
 #define ESPHAL_WEBSOCKET_HPP
 
+#include "CommManager.hpp"
 #include "TransportLayer.hpp"
 #include "esp_log.h"
 #include "esp_websocket_client.h"
@@ -8,7 +9,7 @@
 #include "freertos/queue.h"
 
 #define WEBSOCKET_MAX_RECEIVE_QUEUE_SIZE 4
-#define WEBSOCKET_MAX_SEND_RECV_FRAME_SIZE_BYTES 1024
+#define WEBSOCKET_MAX_SEND_RECV_FRAME_SIZE_BYTES CommManager::COMM_MANAGER_MAX_RX_PACKET_SIZE
 
 #define WEBSOCKET_MAX_SEND_QUEUE_SIZE 0
 
