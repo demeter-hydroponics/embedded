@@ -4,6 +4,8 @@
 #include "CommManagerTypes.hpp"
 #include "MessageQueue.hpp"
 #include "TransportLayer.hpp"
+#include "column/commands.pb.h"
+#include "common.pb.h"
 #include "time.hpp"
 
 class CommManager {
@@ -12,8 +14,10 @@ class CommManager {
      * @brief Construct a new Comm Manager object
      *
      * @param transport_layer The transport layer to use
+     * @param send_message_queue The message queue to use for sending messsages
      */
-    CommManager(TransportLayer& transport_layer, MessageQueue<CommManagerQueueData_t>& message_queue);
+    CommManager(TransportLayer& transport_layer, MessageQueue<CommManagerQueueData_t>& send_message_queue,
+                MessageQueue<SetPumpStateCommand>* set_pump_state_command_queue);
 
     /**
      * @brief Run the communication manager
@@ -22,12 +26,16 @@ class CommManager {
     void run();
 
     constexpr static size_t COMM_MANAGER_MAX_MESSAGES_IN_PACKET = 50;
+    constexpr static size_t COMM_MANAGER_MAX_RX_PACKET_SIZE = 512;
 
    private:
     TransportLayer& transport_layer_;
     MessageQueue<CommManagerQueueData_t>& message_queue_;
+    MessageQueue<SetPumpStateCommand>* set_pump_state_command_queue_;
 
     void send_packet();
+
+    bool process_message(MessageChannels channel, uint8_t* buf, size_t len);
 
     constexpr static size_t TOTAL_PACKET_BUFFER_SIZE = sizeof(CommManagerQueueData_t) * COMM_MANAGER_MAX_MESSAGES_IN_PACKET;
 
