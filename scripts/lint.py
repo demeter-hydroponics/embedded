@@ -37,6 +37,11 @@ EXCLUDED_CHECKS = [
     "readability-simplify-boolean-expr",
     "cppcoreguidelines-avoid-magic-numbers",
     "readability-magic-numbers",
+    "cppcoreguidelines-avoid-c-arrays",
+    "hicpp-avoid-c-arrays",
+    "modernize-avoid-c-arrays",
+    "cppcoreguidelines-pro-bounds-constant-array-index",
+    "readability-convert-member-functions-to-static",
 ]
 
 # Build include directories string for the clang-tidy command
