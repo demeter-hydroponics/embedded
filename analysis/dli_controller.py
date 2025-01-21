@@ -5,7 +5,7 @@ DLI_SETPOINT = 12  # mol/(m^2*day)
 SECONDS_PER_HOUR = 3600
 CONTROLLER_ONTIME_S = 12 * SECONDS_PER_HOUR  # seconds
 SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR  # seconds
-SIMULATION_TIMESTEP_S = 300
+SIMULATION_TIMESTEP_S = 1
 
 MOL_TO_UMOL = 1e6
 UMOL_TO_MOL = 1 / MOL_TO_UMOL
@@ -34,30 +34,35 @@ class DLIController:
 
         self.series_gain = self.average_ppfd
 
-        self.K_p = 1  # PPFD/DLI_error
+        self.K_i = 0.001  # PPFD/DLI_error
 
-        self.received_dli = 0  # mol/(m^2)
+        self.ppfd_error_integral = 0  # umol/(m^2*s)
         self.reference_dli = 0  # mol/(m^2)
 
     def get_reference_DLI(self, time_s):
         return self.reference_dli
 
-    def integrate_dli_reference(self, time_s):
-        time_day = time_s % SECONDS_PER_DAY
-        if time_day in range(
-            self.controller_start_time_s,
-            self.controller_start_time_s + self.controller_ontime_s_per_day,
+    def get_ppfd_reference(self, time_s):
+        if (time_s > self.controller_start_time_s) and (
+            time_s < self.controller_start_time_s + self.controller_ontime_s_per_day
         ):
-            self.reference_dli += (
-                self.average_ppfd * self.controller_dt * UMOL_TO_MOL
-            )  # mol/(m^2)
+            return self.average_ppfd
+        else:
+            return 0
+
+    def integrate_dli_reference(self, time_s):
+        self.reference_dli += (
+            self.get_ppfd_reference(time_s) * UMOL_TO_MOL * self.controller_dt
+        )
 
     def get_controller_output(self, measured_ppfd, time_s):
         self.integrate_dli_reference(time_s)
-        dli_error = self.get_reference_DLI(time_s) - self.received_dli
-        self.received_dli += measured_ppfd * UMOL_TO_MOL * self.controller_dt
+        ppfd_error = self.get_ppfd_reference(time_s) - measured_ppfd
+        self.ppfd_error_integral += ppfd_error * self.controller_dt
 
-        commanded_ppfd = self.series_gain * dli_error * self.K_p  # umol/(m^2*s)
+        commanded_ppfd = (
+            self.series_gain * self.ppfd_error_integral * self.K_i
+        )  # umol/(m^2*s)
 
         commanded_ppfd = np.clip(commanded_ppfd, 0, self.max_ppfd)
 
