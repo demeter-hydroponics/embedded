@@ -26,7 +26,7 @@ static ESPHAL_TimeServer timeServer;
 static ESPHAL_Wifi wifi;
 static ESPHAL_Websocket websocket;
 static ESPHAL_MessageQueue<CommManagerQueueData_t, CommManager::COMM_MANAGER_MAX_MESSAGES_IN_PACKET> commMessageQueue;
-static CommManager commManager(websocket, commMessageQueue);
+static CommManager commManager(websocket, commMessageQueue, nullptr);
 
 static const i2c_master_bus_config_t i2c_bus_0_config = {
     .i2c_port = I2C_NUM_0,
@@ -60,7 +60,13 @@ static ESPHAL_ADC adc1(ADC_UNIT_1, active_channels, sizeof(active_channels) / si
 static pHSense pH(adc1, ADC_CHANNEL_PH_SENSE, 1.0f, 0.0f);
 static TDSSense tds(adc1, ADC_CHANNEL_TDS_SENSE, 1.0f, 0.0f);
 
-static MixingDevice mixingDevice(timeServer, pH, &tds, commMessageQueue);
+static ESPHAL_GPIO waterValveGPIO((gpio_num_t)GPIO_PIN_WATER_FEED_VALVE_EN);
+static BinaryLoad waterValve(waterValveGPIO, nullptr, nullptr, 0, 0.0f);
+
+static ESPHAL_GPIO mixingFeedValveGPIO((gpio_num_t)GPIO_PIN_MIXING_FEED_VALVE_EN);
+static BinaryLoad mixingValve(mixingFeedValveGPIO, nullptr, nullptr, 0, 0.0f);
+
+static MixingDevice mixingDevice(timeServer, pH, &tds, commMessageQueue, &mixingValve);
 
 static ESPHAL_GPIO primaryMotorEnableGPIO((gpio_num_t)GPIO_PIN_MOTOR_1_EN);
 static ESPHAL_GPIO primaryMotorFaultGPIO((gpio_num_t)GPIO_PIN_MOTOR_1_FAULT);
@@ -71,9 +77,6 @@ static ESPHAL_GPIO secondaryMotorEnableGPIO((gpio_num_t)GPIO_PIN_MOTOR_2_EN);
 static ESPHAL_GPIO secondaryMotorFaultGPIO((gpio_num_t)GPIO_PIN_MOTOR_2_FAULT);
 static ESPHAL_GPIO secondaryMotorSleepGPIO((gpio_num_t)GPIO_PIN_MOTOR_2_NSLEEP);
 static BinaryLoad secondaryPump(secondaryMotorEnableGPIO, &secondaryMotorFaultGPIO, nullptr, 0, 0.0f);
-
-static ESPHAL_GPIO waterValveGPIO((gpio_num_t)GPIO_PIN_WATER_FEED_VALVE_EN);
-static BinaryLoad waterValve(waterValveGPIO, nullptr, nullptr, 0, 0.0f);
 
 static PumpDevice pumpDevice(timeServer, commMessageQueue, primaryPump, secondaryPump, waterValve, reservoirWaterLevelSensor,
                              waterFeedReservoirSensor);
