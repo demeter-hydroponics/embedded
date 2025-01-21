@@ -9,13 +9,14 @@
 #include "util.hpp"
 
 MixingDevice::MixingDevice(TimeServer& timeServer, BasepHSense& pHSense, BaseTDSSense* TDSSense,
-                           MessageQueue<CommManagerQueueData_t>& messageQueue)
+                           MessageQueue<CommManagerQueueData_t>& messageQueue, BaseBinaryLoad* mixingValve)
     : timeServer_(timeServer),
       pHSense_(pHSense),
       TDSSense_(TDSSense),
       messageQueue_(messageQueue),
       pH_error_(BasepHSense::ErrorCode::ADC_ERROR),
-      TDS_error_(TDSSense::ErrorCode::ADC_ERROR) {}
+      TDS_error_(TDSSense::ErrorCode::ADC_ERROR),
+      mixingValve_(mixingValve) {}
 
 MixingDevice::ErrorCode MixingDevice::run() {
     MixingDevice::ErrorCode err = MixingDevice::ErrorCode::NO_ERROR;
@@ -54,6 +55,10 @@ MixingDevice::ErrorCode MixingDevice::run() {
     mixingTankStats.pHSense.Validity =
         (pH_error_ == BasepHSense::ErrorCode::NO_ERROR) ? SensorValidity_VALID : SensorValidity_INVALID;
 
+    if (mixingValve_ != nullptr) {
+        mixingValve_->populateProtobufMessage(mixingTankStats.MixingValveStats);
+    }
+
     CommManagerQueueData_t data;
     data.header.channel = MessageChannels_MIXING_STATS;
     data.header.length = MixingTankStats_size;
@@ -78,4 +83,17 @@ MixingDevice::ErrorCode MixingDevice::get_TDS(float& TDS) {
     TDS = TDS_;
     return TDS_error_ == TDSSense::ErrorCode::NO_ERROR ? MixingDevice::ErrorCode::NO_ERROR
                                                        : MixingDevice::ErrorCode::TDS_READ_ERROR;
+}
+
+MixingDevice::ErrorCode MixingDevice::controlNutrientMixingValve(bool enable) {
+    MixingDevice::ErrorCode err =
+        mixingValve_ != nullptr ? MixingDevice::ErrorCode::NO_ERROR : MixingDevice::ErrorCode::NOT_CONFIGURED_ERROR;
+
+    if (err == MixingDevice::ErrorCode::NO_ERROR) {
+        err = mixingValve_->setEnabled(enable) == BaseBinaryLoad::ErrorCode::NO_ERROR
+                  ? MixingDevice::ErrorCode::NO_ERROR
+                  : MixingDevice::ErrorCode::MIXING_VALVE_ACTUATION_ERROR;
+    }
+
+    return err;
 }

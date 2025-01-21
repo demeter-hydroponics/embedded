@@ -3,6 +3,7 @@
 
 #include "CommManagerTypes.hpp"
 #include "MixingDevice.hpp"
+#include "MockBinaryLoad.hpp"
 #include "MockMessageQueue.hpp"
 #include "MockTDS.hpp"
 #include "MockTime.hpp"
@@ -10,12 +11,15 @@
 #include "column/mixing_metrics.pb.h"
 #include "util.hpp"
 
+using namespace ::testing;
+
 TEST(MixingDeviceTest, TestReadAndPbOutput) {
     MockpHSense phSense;
     MockTDSSense TDSSense;
     MockMessageQueue<CommManagerQueueData_t> messageQueue;
     MockTimeServer timeServer;
-    MixingDevice mixingDevice(timeServer, phSense, &TDSSense, messageQueue);
+    MockBinaryLoad mixingValve;
+    MixingDevice mixingDevice(timeServer, phSense, &TDSSense, messageQueue, &mixingValve);
 
     // expect the pH sensor to be read, return a pH
     EXPECT_CALL(phSense, get_pH(testing::_))
@@ -34,6 +38,14 @@ TEST(MixingDeviceTest, TestReadAndPbOutput) {
     EXPECT_CALL(timeServer, getUClockUs(testing::_))
         .WillOnce(testing::DoAll(testing::SetArgReferee<0>(58123), testing::Return(true)));
 
+    BinaryLoadStats fakeBinaryLoadStats;
+    fakeBinaryLoadStats.current = 1.0f;
+    fakeBinaryLoadStats.state = BinaryLoadState_ENABLED;
+    fakeBinaryLoadStats.faulted = false;
+    fakeBinaryLoadStats.current_valid = SensorValidity_VALID;
+
+    EXPECT_CALL(mixingValve, populateProtobufMessage(_)).WillOnce(DoAll(SetArgReferee<0>(fakeBinaryLoadStats)));
+
     // create a fake mixing stats message
     MixingTankStats mixingTankStats;
     mixingTankStats.TDSSense.TDSSensePPM = 200.0;
@@ -42,6 +54,7 @@ TEST(MixingDeviceTest, TestReadAndPbOutput) {
     mixingTankStats.pHSense.phSenseMolPerL = 7.0;
     mixingTankStats.pHSense.analogVoltage = 1.0;
     mixingTankStats.pHSense.Validity = SensorValidity_VALID;
+    mixingTankStats.MixingValveStats = fakeBinaryLoadStats;
 
     CommManagerQueueData_t expected_data;
     expected_data.header.channel = MessageChannels_MIXING_STATS;
@@ -80,7 +93,7 @@ TEST(MixingDeviceTest, NoTdsNoCrash) {
     MockpHSense phSense;
     MockMessageQueue<CommManagerQueueData_t> messageQueue;
     MockTimeServer timeServer;
-    MixingDevice mixingDevice(timeServer, phSense, nullptr, messageQueue);
+    MixingDevice mixingDevice(timeServer, phSense, nullptr, messageQueue, nullptr);
 
     // expect the pH sensor to be read, return a pH
     EXPECT_CALL(phSense, get_pH(testing::_))
@@ -129,4 +142,29 @@ TEST(MixingDeviceTest, NoTdsNoCrash) {
     float TDS = 0.0f;
     EXPECT_EQ(mixingDevice.get_TDS(TDS), MixingDevice::ErrorCode::TDS_READ_ERROR);
     EXPECT_FLOAT_EQ(0.0f, TDS);
+}
+
+TEST(MixingDeviceTest, RunControl) {
+    MockpHSense phSense;
+    MockTDSSense TDSSense;
+    MockMessageQueue<CommManagerQueueData_t> messageQueue;
+    MockTimeServer timeServer;
+    MockBinaryLoad mixingValve;
+    MixingDevice mixingDevice(timeServer, phSense, &TDSSense, messageQueue, &mixingValve);
+
+    EXPECT_CALL(mixingValve, setEnabled(true)).WillOnce(testing::Return(BaseBinaryLoad::ErrorCode::NO_ERROR));
+
+    EXPECT_EQ(mixingDevice.controlNutrientMixingValve(true), MixingDevice::ErrorCode::NO_ERROR);
+
+    EXPECT_CALL(mixingValve, setEnabled(false)).WillOnce(testing::Return(BaseBinaryLoad::ErrorCode::NO_ERROR));
+
+    EXPECT_EQ(mixingDevice.controlNutrientMixingValve(false), MixingDevice::ErrorCode::NO_ERROR);
+
+    EXPECT_CALL(mixingValve, setEnabled(true)).WillOnce(testing::Return(BaseBinaryLoad::ErrorCode::HAL_ERROR));
+
+    EXPECT_EQ(mixingDevice.controlNutrientMixingValve(true), MixingDevice::ErrorCode::MIXING_VALVE_ACTUATION_ERROR);
+
+    // try with null mixing valve. Should return NOT_CONFIGURED_ERROR
+    MixingDevice mixingDevice2(timeServer, phSense, &TDSSense, messageQueue, nullptr);
+    EXPECT_EQ(mixingDevice2.controlNutrientMixingValve(true), MixingDevice::ErrorCode::NOT_CONFIGURED_ERROR);
 }

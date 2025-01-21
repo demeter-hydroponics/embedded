@@ -1,6 +1,7 @@
 #ifndef MIXING_DEVICE_HPP
 #define MIXING_DEVICE_HPP
 
+#include "BinaryLoad.hpp"
 #include "CommManagerTypes.hpp"
 #include "MessageQueue.hpp"
 #include "TDSSense.hpp"
@@ -8,7 +9,26 @@
 #include "pHSense.hpp"
 #include "time.hpp"
 
-class MixingDevice {
+class BaseMixingDevice {
+   public:
+    /**
+     * @brief The error codes for the mixing device
+     */
+    enum class ErrorCode {
+        NO_ERROR,
+        PH_READ_ERROR,
+        TDS_READ_ERROR,
+        MIXING_VALVE_ACTUATION_ERROR,
+        NOT_CONFIGURED_ERROR,
+    };
+
+    virtual ErrorCode get_pH(float& pH) = 0;
+    virtual ErrorCode get_TDS(float& TDS) = 0;
+
+    virtual ErrorCode controlNutrientMixingValve(bool enable) = 0;
+};
+
+class MixingDevice : public BaseMixingDevice {
    public:
     /**
      * @brief Construct a new Mixing Device object
@@ -17,16 +37,7 @@ class MixingDevice {
      * @param TDSSense The TDS sensor
      */
     MixingDevice(TimeServer& timeServer, BasepHSense& pHSense, BaseTDSSense* TDSSense,
-                 MessageQueue<CommManagerQueueData_t>& messageQueue);
-
-    /**
-     * @brief The error codes for the mixing device
-     */
-    enum class ErrorCode {
-        NO_ERROR,
-        PH_READ_ERROR,
-        TDS_READ_ERROR,
-    };
+                 MessageQueue<CommManagerQueueData_t>& messageQueue, BaseBinaryLoad* mixingValve);
 
     /**
      * @brief Run the mixing device
@@ -39,14 +50,21 @@ class MixingDevice {
      * @param pH The pH value
      * @return The error code
      */
-    ErrorCode get_pH(float& pH);
+    ErrorCode get_pH(float& pH) override;
 
     /**
      * @brief Get the TDS value from the sensor
      * @param TDS The TDS value
      * @return The error code
      */
-    ErrorCode get_TDS(float& TDS);
+    ErrorCode get_TDS(float& TDS) override;
+
+    /**
+     * @brief Control the nutrient mixing valve
+     * @param enable True to enable the valve, false to disable
+     * @return The error code
+     */
+    ErrorCode controlNutrientMixingValve(bool enable) override;
 
    private:
     TimeServer& timeServer_;
@@ -59,6 +77,8 @@ class MixingDevice {
 
     float pH_ = 0.0F;
     float TDS_ = 0.0F;
+
+    BaseBinaryLoad* mixingValve_;
 };
 
 #endif  // MIXING_DEVICE_HPP

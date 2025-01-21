@@ -7,6 +7,7 @@ INCLUDE_DIRS = [
     "c_source/inc/driver",
     "c_source/inc/app",
     "c_source/HAL",
+    "libs/control-utils/control_utils_lib/inc",
     "generated/c",
     "libs/protobuf/submodules/nanopb",
 ]
