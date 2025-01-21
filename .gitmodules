@@ -7,3 +7,6 @@
 [submodule "libs/protobuf"]
 	path = libs/protobuf
 	url = git@github.com:demeter-hydroponics/protobuf.git
+[submodule "libs/control-utils"]
+	path = libs/control-utils
+	url = git@github.com:sahil-kale/control-utils.git

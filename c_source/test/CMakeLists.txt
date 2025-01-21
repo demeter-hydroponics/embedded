@@ -49,6 +49,7 @@ set(GENERATED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../generated)
 set(PROTOBUF_DIR ${GENERATED_DIR}/c)
 set(PBLIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../libs/protobuf/submodules/nanopb)
 set(LIBS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../libs)
+set(CONTROL_UTILS_LIB_DIR ${LIBS_DIR}/control-utils/control_utils_lib)
 
 # ------------------------------------------------------------------------
 # Include directories
@@ -62,6 +63,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/mocks
     SYSTEM ${PBLIB_DIR} # System include to suppress warnings from 3rd-party
     ${GENERATED_DIR}/c
+    ${CONTROL_UTILS_LIB_DIR}/inc
 )
 
 # ------------------------------------------------------------------------
@@ -70,6 +72,7 @@ include_directories(
 file(GLOB_RECURSE PROTOBUF_SOURCES ${PROTOBUF_DIR}/**/*.c)
 file(GLOB COMMON_PROTOBUF_SOURCE ${PROTOBUF_DIR}/*.c)
 file(GLOB PBLIB_SOURCES ${PBLIB_DIR}/*.c)
+file(GLOB_RECURSE CONTROL_UTILS_LIB_SOURCES ${CONTROL_UTILS_LIB_DIR}/src/*.c)
 file(GLOB_RECURSE CPP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../src/*.cpp)
 
 # Main library with your actual source
@@ -103,6 +106,8 @@ add_executable(${This}
     ${PBLIB_SOURCES}
 )
 
+add_library(CONTROL_UTILS_LIB ${CONTROL_UTILS_LIB_SOURCES})
+
 # Link the test executable with GoogleTest and our library
 target_link_libraries(${This}
     gmock
@@ -110,6 +115,7 @@ target_link_libraries(${This}
     gtest
     pthread
     MAIN_SOURCES_LIB
+    CONTROL_UTILS_LIB
 )
 
 # ------------------------------------------------------------------------
