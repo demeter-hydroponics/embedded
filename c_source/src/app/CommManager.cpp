@@ -11,6 +11,18 @@
 #include "pb_decode.h"
 #include "pb_encode.h"
 
+#define HANDLE_MESSAGE(command_type, queue)                         \
+    {                                                               \
+        command_type command = command_type##_init_zero;            \
+        if (pb_decode(&istream, command_type##_fields, &command)) { \
+            if ((queue) != nullptr) {                               \
+                (queue)->send(command);                             \
+            }                                                       \
+        } else {                                                    \
+            ret = false;                                            \
+        }                                                           \
+    }
+
 CommManager::CommManager(TransportLayer& transport_layer, MessageQueue<CommManagerQueueData_t>& send_message_queue,
                          MessageQueue<SetPumpStateCommand>* set_pump_state_command_queue)
     : transport_layer_(transport_layer),
@@ -23,14 +35,7 @@ bool CommManager::process_message(MessageChannels channel, uint8_t* buf, size_t 
     // Decode the message
     switch (channel) {
         case MessageChannels_SET_PUMP_STATE_COMMAND: {
-            SetPumpStateCommand command = SetPumpStateCommand_init_zero;
-            if (pb_decode(&istream, SetPumpStateCommand_fields, &command)) {
-                if (set_pump_state_command_queue_ != nullptr) {
-                    set_pump_state_command_queue_->send(command);
-                }
-            } else {
-                ret = false;
-            }
+            HANDLE_MESSAGE(SetPumpStateCommand, set_pump_state_command_queue_);
             break;
         }
         default:
