@@ -9,36 +9,41 @@ on:
       - main
 
 jobs:
-  # Job 1: Build Node Controller
-  build_node_controller:
+  # Common setup job
+  setup:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the code
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
-      # Step 2: Set up Docker with ESP-IDF and build Node Controller
+      - name: Setup Python environment
+        run: pip install -r scripts/python_requirements.txt
+
+  # Job 1: Build Node Controller
+  build_node_controller:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+
       - name: Build Node Controller
         run: |
           docker pull espressif/idf:latest
           docker run --rm -v ${{ github.workspace }}:/project -w /project espressif/idf:latest /bin/bash -c "
-            . /opt/esp/idf/export.sh &&
-            python3 scripts/build_esp.py --project=node-controller
+            . /opt/esp/idf/export.sh && ls -l && 
+            python3 scripts/demeter_build_script.py --project=node-controller --build
           "
 
   # Job 2: Build Pump Controller
   build_pump_controller:
+    needs: setup
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the code
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # Step 2: Set up Docker with ESP-IDF and build Pump Controller
       - name: Build Pump Controller
         run: |
           docker pull espressif/idf:latest
           docker run --rm -v ${{ github.workspace }}:/project -w /project espressif/idf:latest /bin/bash -c "
             . /opt/esp/idf/export.sh &&
-            python3 scripts/build_esp.py --project=pump-controller
+            python3 scripts/demeter_build_script.py --project=pump-controller --build
           "

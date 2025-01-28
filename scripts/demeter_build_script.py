@@ -1,6 +1,7 @@
 import os
 import argparse
 import click
+import sys
 from build_protobuf import build_protobuf
 
 project_paths = {
@@ -31,23 +32,29 @@ def create_config_file(private_dir: str):
 
 
 def main(args):
-    # confirm esp-idf is sourced
+    # Confirm ESP-IDF is sourced
     esp_idf_path = os.environ.get("IDF_PATH")
     if esp_idf_path is None:
         raise Exception("IDF_PATH is not set. Run `get_demeter_esp_idf` to set it.")
 
     proj_root = os.getcwd()
 
-    # create the config file
+    # Create the config file
     private_dir = os.path.join(proj_root, "private")
     create_config_file(private_dir)
 
     paths = []
 
-    build_protobuf()
+    # Build Protobuf
+    if not build_protobuf():
+        click.secho("Failed to build protobufs", fg="red")
+        sys.exit(1)
 
-    if args.project == None:
-        # get the current working directory
+    if args.build is not True:
+        click.secho("Note that no build option was specified", fg="yellow")
+
+    if args.project is None:
+        # Get the current working directory
         paths = [
             os.path.join(proj_root, project_path)
             for project_path in project_paths.values()
@@ -57,21 +64,27 @@ def main(args):
 
     for path in paths:
         os.chdir(path)
-        if args.build is True:
+        if args.build:
             retcode = os.system("idf.py build")
             if retcode != 0:
                 click.secho(f"Failed to build {path}", fg="red")
-                return
+                sys.exit(1)
 
     if (args.project is None) and (args.flash or args.monitor):
         click.secho("A project must be specified to flash or monitor", fg="red")
-        return
+        sys.exit(1)
 
     if args.flash:
-        os.system(f"idf.py -p {args.port} flash")
+        retcode = os.system(f"idf.py -p {args.port} flash")
+        if retcode != 0:
+            click.secho("Failed to flash the project", fg="red")
+            sys.exit(1)
 
     if args.monitor:
-        os.system(f"idf.py -p {args.port} monitor")
+        retcode = os.system(f"idf.py -p {args.port} monitor")
+        if retcode != 0:
+            click.secho("Failed to start monitor", fg="red")
+            sys.exit(1)
 
 
 if __name__ == "__main__":

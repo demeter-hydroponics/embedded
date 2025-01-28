@@ -39,10 +39,12 @@ def build_protobuf():
         )
         print("Protobuf generation succeeded!")
         print(result.stdout)
+        return True
     except subprocess.CalledProcessError as e:
         print("Protobuf generation failed!")
         print(f"Return code: {e.returncode}")
         print(f"Error output: {e.stderr}")
+        return False
 
 
 if __name__ == "__main__":
