@@ -25,15 +25,26 @@ jobs:
   build_node_controller:
     needs: setup
     runs-on: ubuntu-latest
+    container:
+      image: espressif/idf:latest
+      options: --user root  # Optional: Run as root to avoid permission issues
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Setup ESP-IDF
+        run: |
+          . /opt/esp/idf/export.sh
+
+      - name: List project files
+        run: ls -lR scripts/
 
       - name: Build Node Controller
         run: |
-          pwd
-          docker pull espressif/idf:latest
-          docker run --rm -v $(pwd):/project -w /project espressif/idf:latest /bin/bash -c "
-            ls -la && pwd && python3 scripts/demeter_build_script.py --project=node-controller
-          "
+          python3 scripts/demeter_build_script.py --project=node-controller --build
+
 
   # Job 2: Build Pump Controller
   build_pump_controller:
@@ -43,7 +54,7 @@ jobs:
       - name: Build Pump Controller
         run: |
           docker pull espressif/idf:latest
-          docker run --rm -v $(pwd):/project -w /project espressif/idf:latest /bin/bash -c "
+          docker run --rm -v ${{ github.workspace }}:/project -w /project espressif/idf:latest /bin/bash -c "
             . /opt/esp/idf/export.sh &&
             python3 scripts/demeter_build_script.py --project=pump-controller --build
           "
