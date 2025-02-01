@@ -9,21 +9,8 @@ on:
       - main
 
 jobs:
-  # Common setup job
-  setup:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - name: Setup Python environment
-        run: pip install -r scripts/python_requirements.txt
-
   # Job 1: Build Node Controller
   build_node_controller:
-    needs: setup
     runs-on: ubuntu-latest
     container:
       image: espressif/idf:latest
@@ -38,23 +25,9 @@ jobs:
         run: |
           . /opt/esp/idf/export.sh
 
-      - name: List project files
-        run: ls -lR scripts/
+      - name: Install Python Dependencies
+        run: python -m pip install -r scripts/python_requirements.txt
 
       - name: Build Node Controller
         run: |
           python3 scripts/demeter_build_script.py --project=node-controller --build
-
-
-  # Job 2: Build Pump Controller
-  build_pump_controller:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build Pump Controller
-        run: |
-          docker pull espressif/idf:latest
-          docker run --rm -v ${{ github.workspace }}:/project -w /project espressif/idf:latest /bin/bash -c "
-            . /opt/esp/idf/export.sh &&
-            python3 scripts/demeter_build_script.py --project=pump-controller --build
-          "
