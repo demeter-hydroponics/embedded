@@ -32,10 +32,7 @@ jobs:
           pwd
           docker pull espressif/idf:latest
           docker run --rm -v $(pwd):/project -w /project espressif/idf:latest /bin/bash -c "
-            ls -la &&
-            pwd && 
-            . /opt/esp/idf/export.sh && 
-            python3 scripts/demeter_build_script.py --project=node-controller --build
+            ls -la && pwd && python3 scripts/demeter_build_script.py --project=node-controller
           "
 
   # Job 2: Build Pump Controller
