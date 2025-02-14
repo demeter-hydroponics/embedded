@@ -21,6 +21,7 @@ void PumpManager::run() {
     static const StateTableData stateTable[] = {
         {&PumpManager::run_init, nullptr, nullptr},
         {&PumpManager::run_debug, &PumpManager::onenter_debug, &PumpManager::onexit_debug},
+        {&PumpManager::run_running_primary, &PumpManager::onenter_running_primary, nullptr},
     };
 
     // run the current state
@@ -46,6 +47,9 @@ PumpManager::PumpManagerState PumpManager::run_init() {
 
     if (pumpStateCommandReceived_) {
         newState = PumpManagerState::DEBUG;
+    } else {
+        // TODO: Perhaps a self-check state?
+        newState = PumpManagerState::RUNNING_PRIMARY;
     }
 
     return newState;
@@ -86,4 +90,19 @@ PumpManager::PumpManagerState PumpManager::run_debug() {
 
 void PumpManager::onexit_debug() {
     // do nothing
+}
+
+void PumpManager::onenter_running_primary() {
+    pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_PRIMARY, true);
+    pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_SECONDARY, false);
+}
+
+PumpManager::PumpManagerState PumpManager::run_running_primary() {
+    PumpManagerState newState = PumpManagerState::RUNNING_PRIMARY;
+
+    if (pumpStateCommandReceived_) {
+        newState = PumpManagerState::DEBUG;
+    }
+
+    return newState;
 }
