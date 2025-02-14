@@ -11,6 +11,7 @@ class PumpManager {
     enum class PumpManagerState {
         INIT = 0,
         DEBUG,
+        RUNNING_PRIMARY,
     };
 
     PumpManager(TimeServer& timeServer, MessageQueue<CommManagerQueueData_t>& commMessageQueue,
@@ -39,6 +40,9 @@ class PumpManager {
     void onenter_debug();
     PumpManagerState run_debug();
     void onexit_debug();
+
+    void onenter_running_primary();
+    PumpManagerState run_running_primary();
 
     // Create a state machine based on a table of function pointers
     typedef PumpManagerState (PumpManager::*StateFunc)();

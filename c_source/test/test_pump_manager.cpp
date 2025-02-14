@@ -8,23 +8,6 @@
 
 using namespace ::testing;
 
-TEST(PumpManager, test_init) {
-    MockTimeServer timeServer;
-    MockMessageQueue<CommManagerQueueData_t> commMessageQueue;
-    MockMessageQueue<SetPumpStateCommand> pumpStateCommandQueue;
-    MockPumpDevice pump;
-
-    PumpManager pumpManager(timeServer, commMessageQueue, pumpStateCommandQueue, pump);
-
-    // expect a call to the pump device, disabling both pumps
-    EXPECT_CALL(pump, controlPump(BasePumpDevice::PumpType::PUMP_PRIMARY, false)).Times(1);
-    EXPECT_CALL(pump, controlPump(BasePumpDevice::PumpType::PUMP_SECONDARY, false)).Times(1);
-
-    pumpManager.run();
-
-    EXPECT_EQ(pumpManager.getState(), PumpManager::PumpManagerState::INIT);
-}
-
 TEST(PumpManager, test_init_to_debug) {
     MockTimeServer timeServer;
     MockMessageQueue<CommManagerQueueData_t> commMessageQueue;
@@ -85,4 +68,45 @@ TEST(PumpManager, test_init_to_debug) {
     EXPECT_CALL(pump, controlPump(BasePumpDevice::PumpType::PUMP_PRIMARY, false)).Times(1);
     EXPECT_CALL(pump, controlPump(BasePumpDevice::PumpType::PUMP_SECONDARY, false)).Times(1);
     pumpManager.run();
+}
+
+TEST(PumpManager, test_init_to_running_primary) {
+    MockTimeServer timeServer;
+    MockMessageQueue<CommManagerQueueData_t> commMessageQueue;
+    MockMessageQueue<SetPumpStateCommand> pumpStateCommandQueue;
+    MockPumpDevice pump;
+
+    PumpManager pumpManager(timeServer, commMessageQueue, pumpStateCommandQueue, pump);
+
+    EXPECT_EQ(pumpManager.getState(), PumpManager::PumpManagerState::INIT);
+    EXPECT_CALL(pump, controlPump(BasePumpDevice::PumpType::PUMP_PRIMARY, false)).Times(1);
+    EXPECT_CALL(pump, controlPump(BasePumpDevice::PumpType::PUMP_PRIMARY, true)).Times(1);
+    EXPECT_CALL(pump, controlPump(BasePumpDevice::PumpType::PUMP_SECONDARY, false)).Times(2);
+    pumpManager.run();
+    EXPECT_EQ(pumpManager.getState(), PumpManager::PumpManagerState::RUNNING_PRIMARY);
+}
+
+TEST(PumpManager, test_running_primary_to_debug) {
+    MockTimeServer timeServer;
+    MockMessageQueue<CommManagerQueueData_t> commMessageQueue;
+    MockMessageQueue<SetPumpStateCommand> pumpStateCommandQueue;
+    MockPumpDevice pump;
+
+    PumpManager pumpManager(timeServer, commMessageQueue, pumpStateCommandQueue, pump);
+
+    pumpManager.run();
+
+    EXPECT_EQ(pumpManager.getState(), PumpManager::PumpManagerState::RUNNING_PRIMARY);
+    testing::Mock::VerifyAndClearExpectations(&pump);
+
+    // Send a command through the pumpStateCommandQueue
+    SetPumpStateCommand command;
+    command.SelectedPump = PumpType_SECONDARY;
+    command.State = PumpState_PUMP_ON;
+
+    EXPECT_CALL(pumpStateCommandQueue, receive(testing::_))
+        .WillOnce(testing::DoAll(testing::SetArgReferee<0>(command), testing::Return(true)));
+
+    pumpManager.run();
+    EXPECT_EQ(pumpManager.getState(), PumpManager::PumpManagerState::DEBUG);
 }
