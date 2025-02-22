@@ -24,6 +24,8 @@ class TimeServer {
      * @param delay The number of microseconds to delay
      */
     virtual void delayUs(utime_t delay) = 0;
+
+    constexpr static utime_t kUtimeUsPerSecond = 1000000;
 };
 
 #endif  // TIME_HPP

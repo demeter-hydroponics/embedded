@@ -3,13 +3,18 @@
 
 #include "HAL_PWMChannel.hpp"
 
-class StatusLED {
+class BaseStatusLED {
    public:
     enum class ErrorCode {
         NO_ERROR,
         HAL_ERROR,
     };
 
+    virtual ErrorCode setColour(float r, float g, float b) = 0;
+};
+
+class StatusLED : public BaseStatusLED {
+   public:
     StatusLED(HAL_PWMChannel& pwmChannelR, HAL_PWMChannel& pwmChannelG, HAL_PWMChannel& pwmChannelB);
 
     /**
@@ -21,7 +26,7 @@ class StatusLED {
      *
      * @return Error code
      */
-    ErrorCode setColour(float r, float g, float b);
+    ErrorCode setColour(float r, float g, float b) override;
 
    private:
     HAL_PWMChannel& pwmChannelR_;
