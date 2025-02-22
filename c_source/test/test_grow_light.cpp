@@ -11,7 +11,7 @@ TEST(GrowLightTest, SetDutyCycle) {
     MockADC adc;
     GrowLight growLight(pwmChannel, &adc, 1.0f, 1);
 
-    EXPECT_CALL(pwmChannel, setDutyCycle(0.5f)).WillOnce(testing::Return(HAL_PWMChannel::ErrorCode::NO_ERROR));
+    EXPECT_CALL(pwmChannel, setDutyCycle(0.5f)).WillOnce(testing::Return(HAL_PWMTimer::ErrorCode::NO_ERROR));
 
     EXPECT_EQ(growLight.setDutyCycle(0.5f), GrowLight::ErrorCode::NO_ERROR);
 }
@@ -28,7 +28,7 @@ TEST(GrowLightTest, SetDutyCycleHalError) {
     MockADC adc;
     GrowLight growLight(pwmChannel, &adc, 1.0f, 1);
 
-    EXPECT_CALL(pwmChannel, setDutyCycle(0.5f)).WillOnce(testing::Return(HAL_PWMChannel::ErrorCode::HAL_ERROR));
+    EXPECT_CALL(pwmChannel, setDutyCycle(0.5f)).WillOnce(testing::Return(HAL_PWMTimer::ErrorCode::HAL_ERROR));
 
     EXPECT_EQ(growLight.setDutyCycle(0.5f), GrowLight::ErrorCode::HAL_ERROR);
 }
@@ -38,10 +38,10 @@ TEST(GrowLightTest, init) {
     MockADC adc;
     GrowLight growLight(pwmChannel, &adc, 1.0f, 1);
 
-    EXPECT_CALL(pwmChannel, setFrequency(1000)).WillOnce(testing::Return(HAL_PWMChannel::ErrorCode::NO_ERROR));
+    EXPECT_CALL(pwmChannel, setFrequency(1000)).WillOnce(testing::Return(HAL_PWMTimer::ErrorCode::NO_ERROR));
     EXPECT_EQ(growLight.init(1000), GrowLight::ErrorCode::NO_ERROR);
 
-    EXPECT_CALL(pwmChannel, setFrequency(1000)).WillOnce(testing::Return(HAL_PWMChannel::ErrorCode::HAL_ERROR));
+    EXPECT_CALL(pwmChannel, setFrequency(1000)).WillOnce(testing::Return(HAL_PWMTimer::ErrorCode::HAL_ERROR));
     EXPECT_EQ(growLight.init(1000), GrowLight::ErrorCode::HAL_ERROR);
 }
 

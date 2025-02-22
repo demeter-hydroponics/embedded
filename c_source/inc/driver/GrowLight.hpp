@@ -3,7 +3,7 @@
 
 #include "HAL_ADC.hpp"
 #include "HAL_GPIO.hpp"
-#include "HAL_PWMChannel.hpp"
+#include "HAL_PWMTimer.hpp"
 
 class GrowLight {
    public:
@@ -21,7 +21,7 @@ class GrowLight {
      * @param current_sense_adc_gain The gain of the current sense ADC
      * @param adc_current_sense_channel The ADC channel to use for current sensing
      */
-    GrowLight(HAL_PWMChannel& pwmChannel, HAL_ADC* current_sense_adc, float current_sense_adc_gain,
+    GrowLight(HAL_PWMTimer& pwmChannel, HAL_ADC* current_sense_adc, float current_sense_adc_gain,
               uint8_t adc_current_sense_channel);
 
     /**
@@ -46,7 +46,7 @@ class GrowLight {
     ErrorCode getCurrent(float& current);
 
    private:
-    HAL_PWMChannel& pwmChannel_;
+    HAL_PWMTimer& pwmChannel_;
     HAL_ADC* current_sense_adc_;
     float current_sense_adc_gain_;
     uint8_t adc_current_sense_channel_;

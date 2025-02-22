@@ -1,7 +1,7 @@
 #ifndef STATUS_LED_HPP
 #define STATUS_LED_HPP
 
-#include "HAL_PWMChannel.hpp"
+#include "HAL_PWMTimer.hpp"
 
 class BaseStatusLED {
    public:
@@ -15,7 +15,7 @@ class BaseStatusLED {
 
 class StatusLED : public BaseStatusLED {
    public:
-    StatusLED(HAL_PWMChannel& pwmChannelR, HAL_PWMChannel& pwmChannelG, HAL_PWMChannel& pwmChannelB);
+    StatusLED(HAL_PWMTimer& pwmChannelR, HAL_PWMTimer& pwmChannelG, HAL_PWMTimer& pwmChannelB);
 
     /**
      * @brief Set the colour of the status LED
@@ -29,9 +29,9 @@ class StatusLED : public BaseStatusLED {
     ErrorCode setColour(float r, float g, float b) override;
 
    private:
-    HAL_PWMChannel& pwmChannelR_;
-    HAL_PWMChannel& pwmChannelG_;
-    HAL_PWMChannel& pwmChannelB_;
+    HAL_PWMTimer& pwmChannelR_;
+    HAL_PWMTimer& pwmChannelG_;
+    HAL_PWMTimer& pwmChannelB_;
 };
 
 #endif  // STATUS_LED_HPP
