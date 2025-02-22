@@ -4,9 +4,10 @@ extern "C" {
 #include "control_utils_util.h"
 }
 
-GrowLight::GrowLight(HAL_PWMTimer& pwmChannel, HAL_ADC* current_sense_adc, float current_sense_adc_gain,
+GrowLight::GrowLight(HAL_PWMTimer& pwmTimer, uint8_t pwmChannel, HAL_ADC* current_sense_adc, float current_sense_adc_gain,
                      uint8_t adc_current_sense_channel)
-    : pwmChannel_(pwmChannel),
+    : pwmTimer_(pwmTimer),
+      pwmChannel_(pwmChannel),
       current_sense_adc_(current_sense_adc),
       current_sense_adc_gain_(current_sense_adc_gain),
       adc_current_sense_channel_(adc_current_sense_channel) {}
@@ -16,18 +17,9 @@ GrowLight::ErrorCode GrowLight::setDutyCycle(float dutyCycle) {
 
     if (ret == ErrorCode::NO_ERROR) {
         dutyCycle = CONTROL_UTILS_CLAMP(dutyCycle, 0.0F, 1.0F);
-        if (pwmChannel_.setDutyCycle(dutyCycle) != HAL_PWMTimer::ErrorCode::NO_ERROR) {
+        if (pwmTimer_.setDutyCycle(dutyCycle, pwmChannel_) != HAL_PWMTimer::ErrorCode::NO_ERROR) {
             ret = ErrorCode::HAL_ERROR;
         }
-    }
-
-    return ret;
-}
-
-GrowLight::ErrorCode GrowLight::init(uint32_t growLightFreq) {
-    GrowLight::ErrorCode ret = ErrorCode::NO_ERROR;
-    if (pwmChannel_.setFrequency(growLightFreq) != HAL_PWMTimer::ErrorCode::NO_ERROR) {
-        ret = ErrorCode::HAL_ERROR;
     }
 
     return ret;

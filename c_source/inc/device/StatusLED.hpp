@@ -15,7 +15,7 @@ class BaseStatusLED {
 
 class StatusLED : public BaseStatusLED {
    public:
-    StatusLED(HAL_PWMTimer& pwmChannelR, HAL_PWMTimer& pwmChannelG, HAL_PWMTimer& pwmChannelB);
+    StatusLED(HAL_PWMTimer& pwmTimer, uint8_t pwmChannelR, uint8_t pwmChannelG, uint8_t pwmChannelB);
 
     /**
      * @brief Set the colour of the status LED
@@ -29,9 +29,10 @@ class StatusLED : public BaseStatusLED {
     ErrorCode setColour(float r, float g, float b) override;
 
    private:
-    HAL_PWMTimer& pwmChannelR_;
-    HAL_PWMTimer& pwmChannelG_;
-    HAL_PWMTimer& pwmChannelB_;
+    HAL_PWMTimer& pwmTimer_;
+    uint8_t pwmChannelR_;
+    uint8_t pwmChannelG_;
+    uint8_t pwmChannelB_;
 };
 
 #endif  // STATUS_LED_HPP
