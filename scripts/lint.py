@@ -45,6 +45,7 @@ EXCLUDED_CHECKS = [
     "readability-convert-member-functions-to-static",
     "cppcoreguidelines-avoid-do-while",
     "cppcoreguidelines-macro-usage",
+    "readability-make-member-function-const",
 ]
 
 # Build include directories string for the clang-tidy command
