@@ -1,7 +1,7 @@
 #include "StatusLightingManager.hpp"
 
-StatusLightingManager::StatusLightingManager(TimeServer& timeServer, BaseStatusLED& statusLED)
-    : timeServer_(timeServer), statusLED_(statusLED) {}
+StatusLightingManager::StatusLightingManager(TimeServer& timeServer, BaseStatusLED& StatusPWMLED)
+    : timeServer_(timeServer), statusLED_(StatusPWMLED) {}
 
 void StatusLightingManager::run() {
     // TODO: Do more than just blink

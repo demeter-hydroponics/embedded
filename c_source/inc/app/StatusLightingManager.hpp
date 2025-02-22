@@ -6,7 +6,7 @@
 
 class StatusLightingManager {
    public:
-    StatusLightingManager(TimeServer& timeServer, BaseStatusLED& statusLED);
+    StatusLightingManager(TimeServer& timeServer, BaseStatusLED& StatusPWMLED);
 
     void run();
 

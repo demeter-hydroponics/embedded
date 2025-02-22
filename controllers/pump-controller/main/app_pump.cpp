@@ -89,6 +89,7 @@ static PumpDevice pumpDevice(timeServer, commMessageQueue, primaryPump, secondar
 
 static PumpManager pumpManager(timeServer, commMessageQueue, pumpStateCommandQueue, pumpDevice);
 
+#ifdef USE_PWM_STATUS_LED
 static uint8_t ledc_channel_to_gpio_map[] = {
     GPIO_PIN_LED_RED,
     GPIO_PIN_LED_GREEN,
@@ -96,8 +97,16 @@ static uint8_t ledc_channel_to_gpio_map[] = {
 };
 
 static ESPHAL_PWMTimer ledPwmTimer(LEDC_TIMER_0, ledc_channel_to_gpio_map, sizeof(ledc_channel_to_gpio_map), "LED_PWM");
-static StatusLED statusLED(ledPwmTimer, 0, 1, 2);
+static StatusPWMLED StatusPWMLED(ledPwmTimer, 0, 1, 2);
+static StatusLightingManager statusLightingManager(timeServer, StatusPWMLED);
+#else
+static ESPHAL_GPIO ledRedGPIO((gpio_num_t)GPIO_PIN_LED_RED);
+static ESPHAL_GPIO ledGreenGPIO((gpio_num_t)GPIO_PIN_LED_GREEN);
+static ESPHAL_GPIO ledBlueGPIO((gpio_num_t)GPIO_PIN_LED_BLUE);
+
+static StatusGPIOLED statusLED(ledRedGPIO, ledGreenGPIO, ledBlueGPIO);
 static StatusLightingManager statusLightingManager(timeServer, statusLED);
+#endif
 
 static const char *uri = WEBSOCKET_URI;
 
@@ -164,7 +173,11 @@ void app_run() {
     esp_log_level_set("*", ESP_LOG_INFO);
     esp_log_level_set(TAG, ESP_LOG_DEBUG);
 
+#ifdef USE_PWM_STATUS_LED
     ledPwmTimer.setFrequency(LED_PWM_FREQ_HZ);
+#else
+    statusLED.init();
+#endif
 
     adc1.init();
     binary_load_init();
