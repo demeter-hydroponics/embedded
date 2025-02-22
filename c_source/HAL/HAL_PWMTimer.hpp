@@ -7,6 +7,7 @@ class HAL_PWMTimer {
    public:
     enum class ErrorCode {
         NO_ERROR,
+        INVALID_CHANNEL,
         HAL_ERROR,
     };
 

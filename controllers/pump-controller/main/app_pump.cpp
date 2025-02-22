@@ -6,6 +6,7 @@
 #include "ESPHAL_GPIO.hpp"
 #include "ESPHAL_I2C.hpp"
 #include "ESPHAL_MessageQueue.hpp"
+#include "ESPHAL_PWM.hpp"
 #include "ESPHAL_Time.hpp"
 #include "ESPHAL_Websocket.hpp"
 #include "ESPHAL_Wifi.hpp"
@@ -13,6 +14,8 @@
 #include "POLOLU_VL53L0X.hpp"
 #include "PumpDevice.hpp"
 #include "PumpManager.hpp"
+#include "StatusLED.hpp"
+#include "StatusLightingManager.hpp"
 #include "TDSSense.hpp"
 #include "WaterLevelSense.hpp"
 #include "board_config.hpp"
@@ -86,6 +89,16 @@ static PumpDevice pumpDevice(timeServer, commMessageQueue, primaryPump, secondar
 
 static PumpManager pumpManager(timeServer, commMessageQueue, pumpStateCommandQueue, pumpDevice);
 
+static uint8_t ledc_channel_to_gpio_map[] = {
+    GPIO_PIN_LED_RED,
+    GPIO_PIN_LED_GREEN,
+    GPIO_PIN_LED_BLUE,
+};
+
+static ESPHAL_PWMTimer ledPwmTimer(LEDC_TIMER_0, ledc_channel_to_gpio_map, sizeof(ledc_channel_to_gpio_map), "LED_PWM");
+static StatusLED statusLED(ledPwmTimer, 0, 1, 2);
+static StatusLightingManager statusLightingManager(timeServer, statusLED);
+
 static const char *uri = WEBSOCKET_URI;
 
 void task_10ms_run(void *pvParameters) {
@@ -103,6 +116,7 @@ void task_10ms_run(void *pvParameters) {
         mixingDevice.run();
 
         pumpManager.run();
+        statusLightingManager.run();
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
@@ -149,6 +163,8 @@ void app_run() {
     // Initialize the logger
     esp_log_level_set("*", ESP_LOG_INFO);
     esp_log_level_set(TAG, ESP_LOG_DEBUG);
+
+    ledPwmTimer.setFrequency(LED_PWM_FREQ_HZ);
 
     adc1.init();
     binary_load_init();
