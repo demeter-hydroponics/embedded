@@ -12,6 +12,7 @@
 #include "MixingDevice.hpp"
 #include "POLOLU_VL53L0X.hpp"
 #include "PumpDevice.hpp"
+#include "PumpManager.hpp"
 #include "TDSSense.hpp"
 #include "WaterLevelSense.hpp"
 #include "board_config.hpp"
@@ -26,7 +27,9 @@ static ESPHAL_TimeServer timeServer;
 static ESPHAL_Wifi wifi;
 static ESPHAL_Websocket websocket;
 static ESPHAL_MessageQueue<CommManagerQueueData_t, CommManager::COMM_MANAGER_MAX_MESSAGES_IN_PACKET> commMessageQueue;
-static CommManager commManager(websocket, commMessageQueue, nullptr);
+static ESPHAL_MessageQueue<SetPumpStateCommand, 1U> pumpStateCommandQueue;
+
+static CommManager commManager(websocket, commMessageQueue, &pumpStateCommandQueue);
 
 static const i2c_master_bus_config_t i2c_bus_0_config = {
     .i2c_port = I2C_NUM_0,
@@ -81,6 +84,8 @@ static BinaryLoad secondaryPump(secondaryMotorEnableGPIO, &secondaryMotorFaultGP
 static PumpDevice pumpDevice(timeServer, commMessageQueue, primaryPump, secondaryPump, waterValve, reservoirWaterLevelSensor,
                              waterFeedReservoirSensor);
 
+static PumpManager pumpManager(timeServer, commMessageQueue, pumpStateCommandQueue, pumpDevice);
+
 static const char *uri = WEBSOCKET_URI;
 
 void task_10ms_run(void *pvParameters) {
@@ -96,6 +101,8 @@ void task_10ms_run(void *pvParameters) {
         pH.poll();
         tds.poll();
         mixingDevice.run();
+
+        pumpManager.run();
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
