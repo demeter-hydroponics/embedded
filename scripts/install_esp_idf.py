@@ -5,7 +5,7 @@ def make_alias():
     # Add alias to bashrc with the path to libs/esp-idf. alias is get_demeter_esp_idf
     bashrc_path = os.path.expanduser("~/.bashrc")
 
-    esp_idf_export_path = os.path.join(os.getcwd(), "libs", "esp-idf")
+    esp_idf_export_path = os.path.join(os.getcwd())
     esp_idf_export_path += "/export.sh"
 
     # check if alias already exists

@@ -26,7 +26,7 @@ constexpr uint8_t GPIO_PIN_MOTOR_2_FAULT = 13;
 constexpr uint8_t GPIO_PIN_MOTOR_2_EN = 15;
 constexpr uint8_t GPIO_PIN_MOTOR_2_NSLEEP = 4;
 
-constexpr uint8_t GPIO_PIN_WATER_FEED_VALVE_EN = 18;    // VALVE EN 1
+constexpr uint8_t GPIO_PIN_WATER_FEED_VALVE_EN = 18;   // VALVE EN 1
 constexpr uint8_t GPIO_PIN_MIXING_FEED_VALVE_EN = 23;  // VALVE EN 2
 
 constexpr uint8_t GPIO_PIN_LED_BLUE = 22;

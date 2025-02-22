@@ -98,6 +98,9 @@ if __name__ == "__main__":
         print(e)
         exit(1)
 
+    dialout_cmd = "sudo usermod -a -G dialout $USER"
+    run_command(dialout_cmd)
+
     # Execute functions
     update_and_upgrade(skip_upgrade=args.skip_upgrade)
     install_apt_components(apt_components)
