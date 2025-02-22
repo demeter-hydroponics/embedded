@@ -107,6 +107,9 @@ static StatusLightingManager statusLightingManager(timeServer, statusLED);
 
 static const char *uri = WEBSOCKET_URI;
 
+static const utime_t TOF_DELAY_TIME_US = 200*1000;
+static utime_t tof_last_read_time = 0U;
+
 void task_10ms_run(void *pvParameters) {
     while (1) {
         reservoirWaterLevelSensor.poll();
@@ -123,6 +126,18 @@ void task_10ms_run(void *pvParameters) {
 
         pumpManager.run();
         statusLightingManager.run();
+
+        if (tof_last_read_time + TOF_DELAY_TIME_US >= timeServer.getUtimeUs())
+        {
+            // read from tof sensors
+            float solutionReservoirDistance = 0.0f;
+            solutionReservoirTOF.get_distance_m(solutionReservoirDistance);
+            ESP_LOGI(TAG, "Solution reservoir distance: %f", solutionReservoirDistance);
+            float waterFeedReservoirDistance = 0.0f;
+            waterFeedReservoirTOF.get_distance_m(waterFeedReservoirDistance);
+            ESP_LOGI(TAG, "Water feed reservoir distance: %f", waterFeedReservoirDistance);
+            tof_last_read_time = timeServer.getUtimeUs();
+        }
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
