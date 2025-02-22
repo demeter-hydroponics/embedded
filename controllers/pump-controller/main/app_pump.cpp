@@ -7,6 +7,7 @@
 #include "ESPHAL_I2C.hpp"
 #include "ESPHAL_MessageQueue.hpp"
 #include "ESPHAL_PWM.hpp"
+#include "ESPHAL_TCA9545A.hpp"
 #include "ESPHAL_Time.hpp"
 #include "ESPHAL_Websocket.hpp"
 #include "ESPHAL_Wifi.hpp"
@@ -34,14 +35,6 @@ static ESPHAL_MessageQueue<SetPumpStateCommand, 1U> pumpStateCommandQueue;
 
 static CommManager commManager(websocket, commMessageQueue, &pumpStateCommandQueue);
 
-static const i2c_master_bus_config_t i2c_bus_0_config = {
-    .i2c_port = I2C_NUM_0,
-    .sda_io_num = (gpio_num_t)COLUMN_I2C0_SDA,
-    .scl_io_num = (gpio_num_t)COLUMN_I2C0_SCL,
-    .clk_source = I2C_CLK_SRC_DEFAULT,
-    .glitch_ignore_cnt = 7,
-};
-
 static const i2c_master_bus_config_t i2c_bus_1_config = {
     .i2c_port = I2C_NUM_1,
     .sda_io_num = (gpio_num_t)COLUMN_I2C1_SDA,
@@ -50,11 +43,15 @@ static const i2c_master_bus_config_t i2c_bus_1_config = {
     .glitch_ignore_cnt = 7,
 };
 
-static ESPHAL_I2C i2c0(i2c_bus_0_config, I2C_FREQ_HZ);
 static ESPHAL_I2C i2c1(i2c_bus_1_config, I2C_FREQ_HZ);
 
-static VL53L0X solutionReservoirTOF(i2c0, timeServer);
-static VL53L0X waterFeedReservoirTOF(i2c1, timeServer);
+static ESPHAL_GPIO i2cMuxResetPin((gpio_num_t)GPIO_PIN_I2C_MUX_NRESET);
+static ESPHAL_TCA9545A i2cMux(timeServer, i2c1, i2cMuxResetPin, I2C_MUX_A0_STATE, I2C_MUX_A1_STATE);
+static ESPHAL_TCA9545A_I2C_BUS_ABSTRACTION solutionI2cBus(i2cMux, TOF_I2C_MUX_CHANNEL_SOLUTION_RESERVOIR);
+static ESPHAL_TCA9545A_I2C_BUS_ABSTRACTION waterFeedI2cBus(i2cMux, TOF_I2C_MUX_CHANNEL_WATER_FEED_RESERVOIR);
+
+static VL53L0X solutionReservoirTOF(solutionI2cBus, timeServer);
+static VL53L0X waterFeedReservoirTOF(waterFeedI2cBus, timeServer);
 
 static WaterLevelSenseFromTOF reservoirWaterLevelSensor(solutionReservoirTOF, 1.0f, 0.0f);
 static WaterLevelSenseFromTOF waterFeedReservoirSensor(waterFeedReservoirTOF, 1.0f, 0.0f);
@@ -183,8 +180,8 @@ void app_run() {
     binary_load_init();
 
     // Initialize the I2C
-    i2c0.init();
     i2c1.init();
+    i2cMux.reset();
 
     // Initialize the wifi
     wifi.init();

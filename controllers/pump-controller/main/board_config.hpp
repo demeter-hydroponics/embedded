@@ -3,15 +3,16 @@
 
 #include <cstdint>
 
-// NOTE: I2C0 is no longer in use, need to use mux
-constexpr uint8_t COLUMN_I2C0_SDA = 27;
-constexpr uint8_t COLUMN_I2C0_SCL = 26;
-
-constexpr uint8_t COLUMN_I2C1_SDA = 25;
-constexpr uint8_t COLUMN_I2C1_SCL = 33;
-constexpr uint8_t GPIO_PIN_I2C_NRESET = 26;
-
+constexpr uint8_t COLUMN_I2C1_SDA = 33;
+constexpr uint8_t COLUMN_I2C1_SCL = 25;
 constexpr uint32_t I2C_FREQ_HZ = 400000U;
+constexpr uint8_t GPIO_PIN_I2C_MUX_NRESET = 26;
+constexpr bool I2C_MUX_A0_STATE = false;
+constexpr bool I2C_MUX_A1_STATE = false;
+
+constexpr uint8_t TOF_I2C_MUX_CHANNEL_SOLUTION_RESERVOIR = 0;
+constexpr uint8_t TOF_I2C_MUX_CHANNEL_WATER_FEED_RESERVOIR = 2;
+constexpr uint8_t TOF_I2C_MUX_CHANNEL_MIXING_FEED_RESERVOIR = 1;
 
 // https://docs.espressif.com/projects/esp-idf/en/v4.2/esp32/api-reference/peripherals/adc.html
 
