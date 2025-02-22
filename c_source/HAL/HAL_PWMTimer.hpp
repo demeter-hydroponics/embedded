@@ -1,16 +1,16 @@
-#ifndef HAL_PWMCHANNEL_HPP
-#define HAL_PWMCHANNEL_HPP
+#ifndef HAL_PWMTIMER_HPP
+#define HAL_PWMTIMER_HPP
 
 #include <stdint.h>
 
-class HAL_PWMChannel {
+class HAL_PWMTimer {
    public:
     enum class ErrorCode {
         NO_ERROR,
         HAL_ERROR,
     };
 
-    virtual ErrorCode setDutyCycle(float dutyCycle) = 0;
+    virtual ErrorCode setDutyCycle(float dutyCycle, uint8_t channel) = 0;
     virtual ErrorCode setFrequency(uint32_t frequency) = 0;
 };
 
