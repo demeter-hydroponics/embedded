@@ -16,12 +16,13 @@ class GrowLight {
 
     /**
      * @brief Construct a new Grow Light object
+     * @param pwmTimer The PWM timer to use for the grow light
      * @param pwmChannel The PWM channel to use for the grow light
      * @param current_sense_adc The ADC to use for current sensing
      * @param current_sense_adc_gain The gain of the current sense ADC
      * @param adc_current_sense_channel The ADC channel to use for current sensing
      */
-    GrowLight(HAL_PWMTimer& pwmChannel, HAL_ADC* current_sense_adc, float current_sense_adc_gain,
+    GrowLight(HAL_PWMTimer& pwmTimer, uint8_t pwmChannel, HAL_ADC* current_sense_adc, float current_sense_adc_gain,
               uint8_t adc_current_sense_channel);
 
     /**
@@ -46,7 +47,8 @@ class GrowLight {
     ErrorCode getCurrent(float& current);
 
    private:
-    HAL_PWMTimer& pwmChannel_;
+    HAL_PWMTimer& pwmTimer_;
+    uint8_t pwmChannel_;
     HAL_ADC* current_sense_adc_;
     float current_sense_adc_gain_;
     uint8_t adc_current_sense_channel_;

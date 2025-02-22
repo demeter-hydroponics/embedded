@@ -4,7 +4,7 @@
 #include "HAL_PWMTimer.hpp"
 #include "gmock/gmock.h"
 
-class MockPWMChannel : public HAL_PWMTimer {
+class MockPWMTimer : public HAL_PWMTimer {
    public:
     MOCK_METHOD(ErrorCode, setDutyCycle, (float dutyCycle, uint8_t channel), (override));
     MOCK_METHOD(ErrorCode, setFrequency, (uint32_t frequency), (override));
