@@ -30,8 +30,8 @@ constexpr uint8_t GPIO_PIN_MOTOR_2_NSLEEP = 4;
 constexpr uint8_t GPIO_PIN_WATER_FEED_VALVE_EN = 18;   // VALVE EN 1
 constexpr uint8_t GPIO_PIN_MIXING_FEED_VALVE_EN = 23;  // VALVE EN 2
 
-constexpr uint8_t GPIO_PIN_LED_BLUE = 22;
-constexpr uint8_t GPIO_PIN_LED_GREEN = 21;
+constexpr uint8_t GPIO_PIN_LED_BLUE = 21;
+constexpr uint8_t GPIO_PIN_LED_GREEN = 22;
 constexpr uint8_t GPIO_PIN_LED_RED = 19;
 constexpr uint32_t LED_PWM_FREQ_HZ = 1000;
 

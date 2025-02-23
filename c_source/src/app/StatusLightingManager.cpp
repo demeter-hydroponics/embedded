@@ -8,8 +8,8 @@ void StatusLightingManager::run() {
     constexpr utime_t blinkInterval = TimeServer::kUtimeUsPerSecond / 2;
 
     if (lastUpdateTime_ + blinkInterval < timeServer_.getUtimeUs()) {
-        const float green_duty = on_ ? 0.5F : 0.0F;
-        statusLED_.setColour(0.0F, green_duty, 0.0F);
+        const float blue_duty = on_ ? 0.5F : 0.0F;
+        statusLED_.setColour(0, 0, blue_duty);
         lastUpdateTime_ = timeServer_.getUtimeUs();
         on_ = !on_;
     }
