@@ -30,8 +30,15 @@ HAL_I2C::ErrorCode ESPHAL_TCA9545A::write(uint8_t address, uint8_t const* const 
     return ret;
 }
 
+<<<<<<< HEAD
 HAL_I2C::ErrorCode ESPHAL_TCA9545A::writeControl(uint8_t channel) {
     uint8_t msg = (1 << channel);
 
     return bus_.write(address_7bit, &msg, 1);
+=======
+HAL_I2C::ErrorCode ESPHAL_TCA9545A::writeControl(uint8_t channel) {
+    uint8_t msg = (1 << channel);
+
+    return bus_.write(address_7bit, &msg, 1); 
+>>>>>>> 458b97b (battle changes)
 }

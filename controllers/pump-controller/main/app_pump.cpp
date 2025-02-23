@@ -107,7 +107,7 @@ static StatusLightingManager statusLightingManager(timeServer, statusLED);
 
 static const char *uri = WEBSOCKET_URI;
 
-static const utime_t TOF_DELAY_TIME_US = 200*1000;
+static const utime_t TOF_DELAY_TIME_US = 200 * 1000;
 static utime_t tof_last_read_time = 0U;
 
 void task_10ms_run(void *pvParameters) {
@@ -127,8 +127,7 @@ void task_10ms_run(void *pvParameters) {
         pumpManager.run();
         statusLightingManager.run();
 
-        if (tof_last_read_time + TOF_DELAY_TIME_US >= timeServer.getUtimeUs())
-        {
+        if (timeServer.getUtimeUs() >= (tof_last_read_time + TOF_DELAY_TIME_US)) {
             // read from tof sensors
             float solutionReservoirDistance = 0.0f;
             solutionReservoirTOF.get_distance_m(solutionReservoirDistance);
