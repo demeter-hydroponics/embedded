@@ -1,15 +1,16 @@
 #ifndef GROW_LIGHT_CONTROLLER_HPP
 #define GROW_LIGHT_CONTROLLER_HPP
 
+#include "CommManagerTypes.hpp"
 #include "GrowLightSection.hpp"
-#include "time.hpp"
 #include "MessageQueue.hpp"
 #include "node/commands.pb.h"
-#include "CommManagerTypes.hpp"
+#include "time.hpp"
 
 class GrowLightController {
    public:
-    GrowLightController(TimeServer& timeServer, BaseGrowLightSection* growLightSections, size_t numGrowLightSections, MessageQueue<CommManagerQueueData_t>& msgQueue, MessageQueue<SetPPFDReferenceCommand>& ppfdCommandQueue);
+    GrowLightController(TimeServer& timeServer, BaseGrowLightSection* growLightSections, size_t numGrowLightSections,
+                        MessageQueue<CommManagerQueueData_t>& msgQueue, MessageQueue<SetPPFDReferenceCommand>& ppfdCommandQueue);
 
     void run();
 
@@ -35,4 +36,4 @@ class GrowLightController {
     float integral_error[MAX_NUM_GROWLIGHT_SECTIONS] = {0};
 };
 
-#endif // GROW_LIGHT_CONTROLLER_HPP
+#endif  // GROW_LIGHT_CONTROLLER_HPP
