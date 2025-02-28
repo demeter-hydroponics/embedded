@@ -5,7 +5,7 @@
 #include "HAL_GPIO.hpp"
 #include "HAL_PWMTimer.hpp"
 
-class GrowLight {
+class BaseGrowLight {
    public:
     enum class ErrorCode {
         NO_ERROR,
@@ -14,6 +14,23 @@ class GrowLight {
         HAL_ERROR,
     };
 
+    /**
+     * @brief Set the grow light duty cycle
+     * @param dutyCycle The duty cycle to set the grow light to
+     * @return The error code
+     */
+    virtual ErrorCode setDutyCycle(float dutyCycle) = 0;
+
+    /**
+     * @brief Get the current duty cycle of the grow light
+     * @param dutyCycle The current duty cycle of the grow light
+     * @return The error code
+     */
+    virtual ErrorCode getCurrent(float& current) = 0;
+};
+
+class GrowLight : public BaseGrowLight {
+   public:
     /**
      * @brief Construct a new Grow Light object
      * @param pwmTimer The PWM timer to use for the grow light
@@ -26,25 +43,18 @@ class GrowLight {
               uint8_t adc_current_sense_channel);
 
     /**
-     * @brief Initialize the grow light
-     * @brief The grow light frequency
-     * @return The error code
-     */
-    ErrorCode init(uint32_t growLightFreq);
-
-    /**
      * @brief Set the grow light duty cycle
      * @param dutyCycle The duty cycle to set the grow light to
      * @return The error code
      */
-    ErrorCode setDutyCycle(float dutyCycle);
+    ErrorCode setDutyCycle(float dutyCycle) override;
 
     /**
      * @brief Get the current duty cycle of the grow light
      * @param dutyCycle The current duty cycle of the grow light
      * @return The error code
      */
-    ErrorCode getCurrent(float& current);
+    ErrorCode getCurrent(float& current) override;
 
    private:
     HAL_PWMTimer& pwmTimer_;
