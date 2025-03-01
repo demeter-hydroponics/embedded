@@ -6,6 +6,7 @@
 #include "TransportLayer.hpp"
 #include "column/commands.pb.h"
 #include "common.pb.h"
+#include "node/commands.pb.h"
 #include "time.hpp"
 
 class CommManager {
@@ -15,9 +16,12 @@ class CommManager {
      *
      * @param transport_layer The transport layer to use
      * @param send_message_queue The message queue to use for sending messsages
+     * @param set_pump_state_command_queue The message queue to use for sending pump state commands
+     * @param ppfd_command_queue The message queue to use for sending PPFD commands
      */
     CommManager(TransportLayer& transport_layer, MessageQueue<CommManagerQueueData_t>& send_message_queue,
-                MessageQueue<SetPumpStateCommand>* set_pump_state_command_queue);
+                MessageQueue<SetPumpStateCommand>* set_pump_state_command_queue,
+                MessageQueue<SetPPFDReferenceCommand>* ppfd_command_queue);
 
     /**
      * @brief Run the communication manager
@@ -32,6 +36,7 @@ class CommManager {
     TransportLayer& transport_layer_;
     MessageQueue<CommManagerQueueData_t>& message_queue_;
     MessageQueue<SetPumpStateCommand>* set_pump_state_command_queue_;
+    MessageQueue<SetPPFDReferenceCommand>* ppfd_command_queue_;
 
     void send_packet();
 
