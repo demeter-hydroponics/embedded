@@ -7,6 +7,7 @@
 #include "ESPHAL_I2C.hpp"
 #include "ESPHAL_MessageQueue.hpp"
 #include "ESPHAL_PWM.hpp"
+#include "ESPHAL_SHT40.hpp"
 #include "ESPHAL_Time.hpp"
 #include "ESPHAL_VEML_7700.hpp"
 #include "ESPHAL_Websocket.hpp"
@@ -46,6 +47,8 @@ static const i2c_master_bus_config_t i2c_bus_1_config = {
 
 static ESPHAL_I2C i2c0(i2c_bus_0_config, I2C_FREQ_HZ);
 static ESPHAL_I2C i2c1(i2c_bus_1_config, I2C_FREQ_HZ);
+
+static Adafruit_SHT4x tempHumiditySensor(&timeServer);
 
 static LTR303 lightSensor0(i2c0);
 static LTR303 lightSensor1(i2c1);
@@ -105,11 +108,11 @@ void init_light_sensors() {
     ltr303Exposure exposure = EXPOSURE_100ms;
     bool enableAutoGain = true;
 
-    if (lightSensor0.begin(gain, exposure, enableAutoGain) != 0U) {
+    if (lightSensor0.begin(gain, exposure, enableAutoGain) == false) {
         ESP_LOGE(TAG, "Failed to initialize light sensor 0");
     }
 
-    if (lightSensor1.begin(gain, exposure, enableAutoGain) != 0U) {
+    if (lightSensor1.begin(gain, exposure, enableAutoGain) == false) {
         ESP_LOGE(TAG, "Failed to initialize light sensor 1");
     }
 }
@@ -117,6 +120,14 @@ void init_light_sensors() {
 void init_grow_lights() {
     if (growLightLEDPwmTimer.setFrequency(LED_PWM_FREQ_HZ) != HAL_PWMTimer::ErrorCode::NO_ERROR) {
         ESP_LOGE(TAG, "Failed to set frequency for grow light PWM timer");
+    }
+}
+
+void init_temp_humidity_sensor() {
+    if (tempHumiditySensor.begin(&i2c1) == false) {
+        ESP_LOGE(TAG, "Failed to initialize temperature and humidity sensor");
+    } else {
+        tempHumiditySensor.setPrecision(SHT4X_HIGH_PRECISION);
     }
 }
 
@@ -138,6 +149,7 @@ void app_run() {
 
     adc1.init();
 
+    init_temp_humidity_sensor();
     init_light_sensors();
 
     while (sntp_get_sync_status() != SNTP_SYNC_STATUS_COMPLETED) {
