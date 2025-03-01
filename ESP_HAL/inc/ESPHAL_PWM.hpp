@@ -17,6 +17,7 @@ class ESPHAL_PWMTimer : public HAL_PWMTimer {
    private:
     ledc_timer_t timer_;
     uint8_t channelToGpioMap_[LEDC_CHANNEL_MAX] = {INVALID_PIN_MAP};
+    size_t lenChannelToGpioMap_;
 
     const char* tag_;
 

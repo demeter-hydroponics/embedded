@@ -85,6 +85,15 @@ void task_10ms_run(void *pvParameters) {
         growLightSection0.run();
         growLightSection1.run();
         growLightController.run();
+        growLight0.setDutyCycle(0.5F);
+        growLight1.setDutyCycle(1.0F);
+
+        // print the currents of the grow lights
+        // float growLightCurrrent0 = 0.0F;
+        // float growLightCurrrent1 = 0.0F;
+        // growLight0.getCurrent(growLightCurrrent0);
+        // growLight1.getCurrent(growLightCurrrent1);
+        // ESP_LOGI(TAG, "Grow light 0 current: %f, Grow light 1 current: %f", growLightCurrrent0, growLightCurrrent1);
 
         statusLightingManager.run();
         vTaskDelay(10 / portTICK_PERIOD_MS);
@@ -136,12 +145,14 @@ void app_run() {
     i2c0.init();
     i2c1.init();
 
+    adc1.init();
+
+    init_light_sensors();
+
     while (sntp_get_sync_status() != SNTP_SYNC_STATUS_COMPLETED) {
         ESP_LOGW(TAG, "Waiting for time to be synchronized...");
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
-
-    init_light_sensors();
 
     utime_t uclock;
     timeServer.getUClockUs(uclock);
