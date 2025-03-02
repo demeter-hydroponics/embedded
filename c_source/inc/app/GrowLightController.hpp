@@ -30,13 +30,15 @@ class GrowLightController {
     constexpr static float MAX_PPFD_OUTPUT = 300.0F;
 
     float ppfdReference_ = 0.0F;
-    constexpr static float K_INTEGRAL_PPFD_TO_PPFD = 0.001F * 277.77F;
+    constexpr static float K_INTEGRAL_PPFD_TO_PPFD = 0.1F;
 
     constexpr static size_t MAX_NUM_GROWLIGHT_SECTIONS = 5U;
     float integral_error[MAX_NUM_GROWLIGHT_SECTIONS] = {0};
 
     constexpr static utime_t GROW_LIGHT_CONTROLLER_RUN_PERIOD_US = 1000U * 1000U;
     utime_t lastRunTime_ = 0;
+
+    constexpr static char TAG_[] = "GROW_LIGHT_CONTROLLER";
 };
 
 #endif  // GROW_LIGHT_CONTROLLER_HPP

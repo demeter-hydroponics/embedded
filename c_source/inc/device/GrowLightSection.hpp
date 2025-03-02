@@ -61,7 +61,7 @@ class GrowLightSection : public BaseGrowLightSection {
      */
     ErrorCode getSensedPPFD(float& sensedPPFD) override;
 
-    constexpr static utime_t MIN_TIME_BETWEEN_LIGHT_SENSOR_READS = 200U * 1000U;
+    constexpr static utime_t MIN_TIME_BETWEEN_LIGHT_SENSOR_READS = 500U * 1000U;
 
    private:
     MessageQueue<CommManagerQueueData_t>& msgQueue_;

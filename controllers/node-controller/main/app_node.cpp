@@ -63,7 +63,7 @@ static GrowLight growLight0(growLightLEDPwmTimer, 0, &adc1, V_TO_CURR_GAIN, ADC_
 static GrowLight growLight1(growLightLEDPwmTimer, 1, &adc1, V_TO_CURR_GAIN, ADC_CHANNEL_CURR_OUT_1);
 
 constexpr static float LUX_TO_PPFD_GAIN = 0.018F;
-constexpr static float PPFD_TO_DUTY_CYCLE_GAIN = 1.0F;
+constexpr static float PPFD_TO_DUTY_CYCLE_GAIN = (1.0F / 270.0F);
 static GrowLightSection growLightSection0(growLight0, commMessageQueue, lightSensor0, PPFD_TO_DUTY_CYCLE_GAIN, LUX_TO_PPFD_GAIN,
                                           0U, timeServer);
 static GrowLightSection growLightSection1(growLight1, commMessageQueue, lightSensor1, PPFD_TO_DUTY_CYCLE_GAIN, LUX_TO_PPFD_GAIN,
@@ -151,6 +151,8 @@ void app_run() {
 
     init_temp_humidity_sensor();
     init_light_sensors();
+
+    growLightController.setPPFDReference(270.0F);
 
     while (sntp_get_sync_status() != SNTP_SYNC_STATUS_COMPLETED) {
         ESP_LOGW(TAG, "Waiting for time to be synchronized...");

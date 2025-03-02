@@ -1,5 +1,6 @@
 #include "GrowLightController.hpp"
 
+#include "control_utils_util.h"
 #include "time.hpp"
 
 GrowLightController::GrowLightController(TimeServer& timeServer, BaseGrowLightSection** growLightSections,
@@ -32,7 +33,9 @@ void GrowLightController::run() {
         if (growLightSection->getSensedPPFD(sensed_ppfd) == BaseGrowLightSection::ErrorCode::NO_ERROR) {
             const float ppfd_error = ppfdReference_ - sensed_ppfd;
             integral_error[i] += ppfd_error;
-            growLightSection->setOutputPPFD(integral_error[i] * K_INTEGRAL_PPFD_TO_PPFD);
+            float outputPPFD = ppfdReference_ + integral_error[i];
+            outputPPFD = CONTROL_UTILS_CLAMP(outputPPFD, 0.0F, MAX_PPFD_OUTPUT);
+            growLightSection->setOutputPPFD(outputPPFD);
         }
     }
 }
