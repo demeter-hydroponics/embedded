@@ -33,7 +33,7 @@ static ESPHAL_Websocket websocket;
 static ESPHAL_MessageQueue<CommManagerQueueData_t, CommManager::COMM_MANAGER_MAX_MESSAGES_IN_PACKET> commMessageQueue;
 static ESPHAL_MessageQueue<SetPumpStateCommand, 1U> pumpStateCommandQueue;
 
-static CommManager commManager(websocket, commMessageQueue, &pumpStateCommandQueue);
+static CommManager commManager(websocket, commMessageQueue, &pumpStateCommandQueue, nullptr);
 
 static const i2c_master_bus_config_t i2c_bus_1_config = {
     .i2c_port = I2C_NUM_1,
