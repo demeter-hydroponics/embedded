@@ -2,6 +2,7 @@
 
 #include <cstring>
 
+#include "control_utils_util.h"
 #include "esp_log.h"
 
 ESPHAL_PWMTimer::ESPHAL_PWMTimer(ledc_timer_t timer, uint8_t* channelToGpioMap, size_t lenChannelToGpioMap, const char* tag)
@@ -51,7 +52,9 @@ ESPHAL_PWMTimer::ErrorCode ESPHAL_PWMTimer::setDutyCycle(float dutyCycle, uint8_
     }
 
     if (error == ErrorCode::NO_ERROR) {
-        ledc_set_duty(LEDC_MODE, static_cast<ledc_channel_t>(channel), static_cast<uint32_t>(dutyCycle * 100.0f));
+        const float clampedDutyCycle = CONTROL_UTILS_CLAMP(dutyCycle, 0.0F, 1.0F);
+        const uint32_t dutyCycleScaled = static_cast<uint32_t>(clampedDutyCycle * ledc_max_duty);
+        ledc_set_duty(LEDC_MODE, static_cast<ledc_channel_t>(channel), dutyCycleScaled);
         ledc_update_duty(LEDC_MODE, static_cast<ledc_channel_t>(channel));
     }
 
