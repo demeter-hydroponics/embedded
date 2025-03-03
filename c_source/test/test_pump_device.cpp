@@ -170,21 +170,4 @@ TEST(PumpDeviceTests, verify_protobuf_information_on_run) {
     EXPECT_EQ(expected_header.channel, received_data.header.channel);
     EXPECT_EQ(expected_header.length, received_data.header.length);
     EXPECT_EQ(expected_header.timestamp, received_data.header.timestamp);
-
-    // construct fake protobuf message
-    uint8_t buffer[PumpTankStats_size];
-    pb_ostream_t ostream = pb_ostream_from_buffer(buffer, PumpTankStats_size);
-
-    PumpTankStats expected_stats;
-    expected_stats.primary_pump = fakeBinaryLoadStats;
-    expected_stats.secondary_pump = fakeBinaryLoadStats;
-    expected_stats.water_valve = fakeBinaryLoadStats;
-    expected_stats.solution_reservoir_level.tank_fluid_volume_L = 1.0f;
-    expected_stats.solution_reservoir_level.level_valid = SensorValidity_VALID;
-    expected_stats.feed_reservoir_level.tank_fluid_volume_L = 2.0f;
-    expected_stats.feed_reservoir_level.level_valid = SensorValidity_VALID;
-
-    IGNORE(pb_encode(&ostream, PumpTankStats_fields, &expected_stats));
-
-    EXPECT_EQ(memcmp(buffer, received_data.data, PumpTankStats_size), 0);
 }

@@ -33,8 +33,9 @@ static ESPHAL_Wifi wifi;
 static ESPHAL_Websocket websocket;
 static ESPHAL_MessageQueue<CommManagerQueueData_t, CommManager::COMM_MANAGER_MAX_MESSAGES_IN_PACKET> commMessageQueue;
 static ESPHAL_MessageQueue<SetPumpStateCommand, 1U> pumpStateCommandQueue;
+static ESPHAL_MessageQueue<SetMixingStateCommand, 1U> mixingStateCommandQueue;
 
-static CommManager commManager(websocket, commMessageQueue, &pumpStateCommandQueue, nullptr);
+static CommManager commManager(websocket, commMessageQueue, &pumpStateCommandQueue, nullptr, &mixingStateCommandQueue);
 
 static const i2c_master_bus_config_t i2c_bus_1_config = {
     .i2c_port = I2C_NUM_1,
@@ -89,7 +90,7 @@ static PumpDevice pumpDevice(timeServer, commMessageQueue, primaryPump, secondar
                              waterFeedReservoirSensor);
 static PumpManager pumpManager(timeServer, commMessageQueue, pumpStateCommandQueue, pumpDevice);
 
-static MixingManager mixingManager(mixingDevice);
+static MixingManager mixingManager(mixingDevice, mixingStateCommandQueue);
 
 #ifdef USE_PWM_STATUS_LED
 static uint8_t ledc_channel_to_gpio_map[] = {
