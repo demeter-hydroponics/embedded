@@ -27,7 +27,7 @@ static ESPHAL_Wifi wifi;
 static ESPHAL_Websocket websocket;
 static ESPHAL_MessageQueue<CommManagerQueueData_t, 50> commMessageQueue;
 static ESPHAL_MessageQueue<SetPPFDReferenceCommand, 1U> ppfdCommandQueue;
-static CommManager commManager(websocket, commMessageQueue, nullptr, &ppfdCommandQueue);
+static CommManager commManager(websocket, commMessageQueue, nullptr, &ppfdCommandQueue, nullptr);
 
 static const i2c_master_bus_config_t i2c_bus_0_config = {
     .i2c_port = I2C_NUM_0,
