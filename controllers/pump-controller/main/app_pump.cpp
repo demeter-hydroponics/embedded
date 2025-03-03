@@ -12,6 +12,7 @@
 #include "ESPHAL_Websocket.hpp"
 #include "ESPHAL_Wifi.hpp"
 #include "MixingDevice.hpp"
+#include "MixingManager.hpp"
 #include "POLOLU_VL53L0X.hpp"
 #include "PumpDevice.hpp"
 #include "PumpManager.hpp"
@@ -55,8 +56,8 @@ static VL53L0X solutionReservoirTOF(solutionI2cBus, timeServer);
 static VL53L0X waterFeedReservoirTOF(waterFeedI2cBus, timeServer);
 static VL53L0X mixingFeedReservoirTOF(mixingFeedI2cBus, timeServer);
 
-static WaterLevelSenseFromTOF reservoirWaterLevelSensor(solutionReservoirTOF,   1.0f, 0.0f);
-static WaterLevelSenseFromTOF waterFeedReservoirSensor(waterFeedReservoirTOF,   1.0f, 0.0f);
+static WaterLevelSenseFromTOF reservoirWaterLevelSensor(solutionReservoirTOF, 1.0f, 0.0f);
+static WaterLevelSenseFromTOF waterFeedReservoirSensor(waterFeedReservoirTOF, 1.0f, 0.0f);
 static WaterLevelSenseFromTOF mixingFeedReservoirSensor(mixingFeedReservoirTOF, 1.0f, 0.0f);
 
 static uint8_t active_channels[] = {ADC_CHANNEL_PH_SENSE,
@@ -86,8 +87,9 @@ static BinaryLoad secondaryPump(secondaryMotorEnableGPIO, &secondaryMotorFaultGP
 
 static PumpDevice pumpDevice(timeServer, commMessageQueue, primaryPump, secondaryPump, waterValve, reservoirWaterLevelSensor,
                              waterFeedReservoirSensor);
-
 static PumpManager pumpManager(timeServer, commMessageQueue, pumpStateCommandQueue, pumpDevice);
+
+static MixingManager mixingManager(mixingDevice);
 
 #ifdef USE_PWM_STATUS_LED
 static uint8_t ledc_channel_to_gpio_map[] = {
@@ -126,6 +128,9 @@ void task_10ms_run(void *pvParameters) {
 
         pumpManager.run();
         statusLightingManager.run();
+
+        mixingDevice.run();
+        mixingManager.run();
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }

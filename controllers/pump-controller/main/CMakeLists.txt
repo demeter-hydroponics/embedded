@@ -11,7 +11,6 @@ set(PROTOBUF_DIR "${LIBS_DIR}/protobuf")
 set(NANOPB_DIR "${PROTOBUF_DIR}/submodules/nanopb")
 set(CONTROL_UTILS_DIR "${LIBS_DIR}/control-utils/control_utils_lib")
 
-
 set(DRIVER_INC_DIR "${APPLICATION_DIR}/inc/driver")
 set(DEVICE_INC_DIR "${APPLICATION_DIR}/inc/device")
 set(APP_INC_DIR "${APPLICATION_DIR}/inc/app")
@@ -21,7 +20,7 @@ file(GLOB HAL_SOURCES "${ESP32HAL_DIR}/src/*.cpp")
 file(GLOB HAL_C_SOURCES "${ESP32HAL_DIR}/src/*.c")
 file(GLOB_RECURSE HIGH_LEVEL_SOURCES "${APPLICATION_DIR}/**/*.cpp")
 file(GLOB PB_SOURCES "${NANOPB_DIR}/*.c")
-file(GLOB CONTROL_UTIL_SOURCES "${CONTROL_UTILS_DIR}/src/*.c}")
+file(GLOB CONTROL_UTIL_SOURCES "${CONTROL_UTILS_DIR}/src/*.c")
 file(GLOB COMMON_MSG_SOURCES "${MESSAGES_DIR}/*.c")
 file(GLOB_RECURSE MESSAGES_SOURCES "${MESSAGES_DIR}/**/*.c")
 # Remove files from the test directory
