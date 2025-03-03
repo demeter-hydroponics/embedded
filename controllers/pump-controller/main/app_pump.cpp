@@ -49,12 +49,15 @@ static ESPHAL_GPIO i2cMuxResetPin((gpio_num_t)GPIO_PIN_I2C_MUX_NRESET);
 static ESPHAL_TCA9545A i2cMux(timeServer, i2c1, i2cMuxResetPin, I2C_MUX_A0_STATE, I2C_MUX_A1_STATE);
 static ESPHAL_TCA9545A_I2C_BUS_ABSTRACTION solutionI2cBus(i2cMux, TOF_I2C_MUX_CHANNEL_SOLUTION_RESERVOIR);
 static ESPHAL_TCA9545A_I2C_BUS_ABSTRACTION waterFeedI2cBus(i2cMux, TOF_I2C_MUX_CHANNEL_WATER_FEED_RESERVOIR);
+static ESPHAL_TCA9545A_I2C_BUS_ABSTRACTION mixingFeedI2cBus(i2cMux, TOF_I2C_MUX_CHANNEL_MIXING_FEED_RESERVOIR);
 
 static VL53L0X solutionReservoirTOF(solutionI2cBus, timeServer);
 static VL53L0X waterFeedReservoirTOF(waterFeedI2cBus, timeServer);
+static VL53L0X mixingFeedReservoirTOF(mixingFeedI2cBus, timeServer);
 
-static WaterLevelSenseFromTOF reservoirWaterLevelSensor(solutionReservoirTOF, 1.0f, 0.0f);
-static WaterLevelSenseFromTOF waterFeedReservoirSensor(waterFeedReservoirTOF, 1.0f, 0.0f);
+static WaterLevelSenseFromTOF reservoirWaterLevelSensor(solutionReservoirTOF,   1.0f, 0.0f);
+static WaterLevelSenseFromTOF waterFeedReservoirSensor(waterFeedReservoirTOF,   1.0f, 0.0f);
+static WaterLevelSenseFromTOF mixingFeedReservoirSensor(mixingFeedReservoirTOF, 1.0f, 0.0f);
 
 static uint8_t active_channels[] = {ADC_CHANNEL_PH_SENSE,
                                     ADC_CHANNEL_TDS_SENSE};  // Channel 1 for the pH sensor, Channel 2 for the TDS sensor
@@ -150,6 +153,13 @@ void TOF_init() {
         waterFeedReservoirTOF.startContinuous();
     } else {
         ESP_LOGE(TAG, "Failed to initialize TOF sensor for water feed reservoir");
+    }
+
+    if (mixingFeedReservoirTOF.init()) {
+        ESP_LOGI(TAG, "TOF sensor for mixing feed reservoir initialized");
+        mixingFeedReservoirTOF.startContinuous();
+    } else {
+        ESP_LOGE(TAG, "Failed to initialize TOF sensor for mixing feed reservoir");
     }
 }
 
