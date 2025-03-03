@@ -26,11 +26,13 @@
 
 CommManager::CommManager(TransportLayer& transport_layer, MessageQueue<CommManagerQueueData_t>& send_message_queue,
                          MessageQueue<SetPumpStateCommand>* set_pump_state_command_queue,
-                         MessageQueue<SetPPFDReferenceCommand>* ppfd_command_queue)
+                         MessageQueue<SetPPFDReferenceCommand>* ppfd_command_queue,
+                         MessageQueue<SetMixingStateCommand>* set_mixing_state_command_queue)
     : transport_layer_(transport_layer),
       message_queue_(send_message_queue),
       set_pump_state_command_queue_(set_pump_state_command_queue),
-      ppfd_command_queue_(ppfd_command_queue) {}
+      ppfd_command_queue_(ppfd_command_queue),
+      set_mixing_state_command_queue_(set_mixing_state_command_queue) {}
 
 bool CommManager::process_message(MessageChannels channel, uint8_t* buf, size_t len) {
     pb_istream_t istream = pb_istream_from_buffer(buf, len);
@@ -43,6 +45,10 @@ bool CommManager::process_message(MessageChannels channel, uint8_t* buf, size_t 
         }
         case MessageChannels_GROW_LIGHT_PPFD_REFERENCE_COMMAND: {
             HANDLE_MESSAGE(SetPPFDReferenceCommand, ppfd_command_queue_);
+            break;
+        }
+        case MessageChannels_SET_MIXING_STATE_COMMAND: {
+            HANDLE_MESSAGE(SetMixingStateCommand, set_mixing_state_command_queue_);
             break;
         }
         default:
