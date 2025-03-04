@@ -7,7 +7,8 @@
 
 PumpDevice::PumpDevice(TimeServer& timeServer, MessageQueue<CommManagerQueueData_t>& messageQueue, BaseBinaryLoad& primaryPump,
                        BaseBinaryLoad& secondaryPump, BaseBinaryLoad& waterValve,
-                       BaseWaterLevelSense& solutionReservoirWaterLevel, BaseWaterLevelSense& waterFeedReservoirWaterLevel)
+                       BaseWaterLevelSense& solutionReservoirWaterLevel, BaseWaterLevelSense& waterFeedReservoirWaterLevel,
+                       BaseWaterLevelSense& mixingFeedReservoirWaterLevel)
     : timeServer_(timeServer),
       messageQueue_(messageQueue),
       primaryPump_(primaryPump),
@@ -15,6 +16,7 @@ PumpDevice::PumpDevice(TimeServer& timeServer, MessageQueue<CommManagerQueueData
       waterValve_(waterValve),
       solutionReservoirWaterLevel_(solutionReservoirWaterLevel),
       waterFeedReservoirWaterLevel_(waterFeedReservoirWaterLevel),
+      mixingFeedReservoirWaterLevel_(mixingFeedReservoirWaterLevel),
       commData_(CommManagerQueueData_t()) {}
 
 PumpDevice::ErrorCode PumpDevice::run() {
@@ -26,6 +28,8 @@ PumpDevice::ErrorCode PumpDevice::run() {
         waterFeedReservoirWaterLevel_.getWaterInTankL(pumpTankStats.feed_reservoir_level.tank_fluid_volume_L));
     pumpTankStats.solution_reservoir_level.level_valid = static_cast<SensorValidity>(
         solutionReservoirWaterLevel_.getWaterInTankL(pumpTankStats.solution_reservoir_level.tank_fluid_volume_L));
+    pumpTankStats.mixing_reservoir_level.level_valid = static_cast<SensorValidity>(
+        mixingFeedReservoirWaterLevel_.getWaterInTankL(pumpTankStats.mixing_reservoir_level.tank_fluid_volume_L));
 
     commData_.header.channel = MessageChannels_PUMP_STATS;
     IGNORE(timeServer_.getUClockUs(commData_.header.timestamp));

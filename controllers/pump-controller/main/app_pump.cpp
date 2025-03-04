@@ -87,7 +87,7 @@ static ESPHAL_GPIO secondaryMotorSleepGPIO((gpio_num_t)GPIO_PIN_MOTOR_2_NSLEEP);
 static BinaryLoad secondaryPump(secondaryMotorEnableGPIO, &secondaryMotorFaultGPIO, nullptr, 0, 0.0f);
 
 static PumpDevice pumpDevice(timeServer, commMessageQueue, primaryPump, secondaryPump, waterValve, reservoirWaterLevelSensor,
-                             waterFeedReservoirSensor);
+                             waterFeedReservoirSensor, mixingFeedReservoirSensor);
 static PumpManager pumpManager(timeServer, commMessageQueue, pumpStateCommandQueue, pumpDevice);
 
 static MixingManager mixingManager(mixingDevice, mixingStateCommandQueue);
@@ -130,7 +130,6 @@ void task_10ms_run(void *pvParameters) {
         pumpManager.run();
         statusLightingManager.run();
 
-        mixingDevice.run();
         mixingManager.run();
 
         vTaskDelay(10 / portTICK_PERIOD_MS);

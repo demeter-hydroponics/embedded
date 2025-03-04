@@ -42,7 +42,7 @@ class PumpDevice : public BasePumpDevice {
      */
     PumpDevice(TimeServer& timeServer, MessageQueue<CommManagerQueueData_t>& messageQueue, BaseBinaryLoad& primaryPump,
                BaseBinaryLoad& secondaryPump, BaseBinaryLoad& waterValve, BaseWaterLevelSense& solutionReservoirWaterLevel,
-               BaseWaterLevelSense& waterFeedReservoirWaterLevel);
+               BaseWaterLevelSense& waterFeedReservoirWaterLevel, BaseWaterLevelSense& mixingFeedReservoirWaterLevel);
 
     /**
      * @brief Run the pump device
@@ -118,6 +118,7 @@ class PumpDevice : public BasePumpDevice {
     BaseBinaryLoad& waterValve_;
     BaseWaterLevelSense& solutionReservoirWaterLevel_;
     BaseWaterLevelSense& waterFeedReservoirWaterLevel_;
+    BaseWaterLevelSense& mixingFeedReservoirWaterLevel_;
 
     CommManagerQueueData_t commData_;
 };
