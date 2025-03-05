@@ -19,6 +19,7 @@
 #include "StatusLED.hpp"
 #include "StatusLightingManager.hpp"
 #include "TDSSense.hpp"
+#include "WaterLevelController.hpp"
 #include "WaterLevelSense.hpp"
 #include "board_config.hpp"
 #include "config.h"
@@ -90,7 +91,8 @@ static PumpDevice pumpDevice(timeServer, commMessageQueue, primaryPump, secondar
                              waterFeedReservoirSensor, mixingFeedReservoirSensor);
 static PumpManager pumpManager(timeServer, commMessageQueue, pumpStateCommandQueue, pumpDevice);
 
-static MixingManager mixingManager(mixingDevice, mixingStateCommandQueue);
+static MixingManager mixingManager(mixingDevice, mixingStateCommandQueue, timeServer);
+static WaterLevelController waterLevelController(pumpDevice);
 
 #ifdef USE_PWM_STATUS_LED
 static uint8_t ledc_channel_to_gpio_map[] = {
@@ -132,6 +134,7 @@ void task_10ms_run(void *pvParameters) {
         statusLightingManager.run();
 
         mixingManager.run();
+        waterLevelController.run();
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
