@@ -139,3 +139,12 @@ PumpDevice::ErrorCode PumpDevice::get_waterLevelWaterFeedReservoir(float& level)
 
     return error;
 }
+
+PumpDevice::ErrorCode PumpDevice::get_solutionReservoirHeightM(float& height) {
+    PumpDevice::ErrorCode error = PumpDevice::ErrorCode::NO_ERROR;
+    if (solutionReservoirWaterLevel_.getRawHeightM(height) == false) {
+        error = PumpDevice::ErrorCode::SENSOR_READ_ERROR;
+    }
+
+    return error;
+}

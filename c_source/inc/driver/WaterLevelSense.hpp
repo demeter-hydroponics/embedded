@@ -12,6 +12,8 @@ class BaseWaterLevelSense {
      * @return true if the water level was successfully read, false otherwise
      */
     virtual bool getWaterInTankL(float& water) = 0;
+
+    virtual bool getRawHeightM(float& height) = 0;
 };
 
 class WaterLevelSenseFromTOF : public BaseWaterLevelSense {
@@ -21,6 +23,8 @@ class WaterLevelSenseFromTOF : public BaseWaterLevelSense {
     void poll();
 
     bool getWaterInTankL(float& water) override;
+
+    bool getRawHeightM(float& height) override { return tof_.get_distance_m(height) == BaseTOF::ErrorCode::NO_ERROR; }
 
    private:
     BaseTOF& tof_;
