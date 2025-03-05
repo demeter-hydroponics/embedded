@@ -9,6 +9,7 @@
 class MockWaterLevelSense : public BaseWaterLevelSense {
    public:
     MOCK_METHOD(bool, getWaterInTankL, (float& water), (override));
+    MOCK_METHOD(bool, getRawHeightM, (float& height), (override));
 };
 
 #endif  // MOCK_WATER_LEVEL_SENSE_HPP

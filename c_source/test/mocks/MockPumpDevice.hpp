@@ -12,6 +12,7 @@ class MockPumpDevice : public BasePumpDevice {
     MOCK_METHOD(ErrorCode, get_waterValveCurrent, (float& current), (override));
     MOCK_METHOD(ErrorCode, controlPump, (PumpType pump, bool enable), (override));
     MOCK_METHOD(ErrorCode, controlWaterValue, (bool enable), (override));
+    MOCK_METHOD(ErrorCode, get_solutionReservoirHeightM, (float& level), (override));
 };
 
 #endif  // MOCK_PUMP_DEVICE_HPP

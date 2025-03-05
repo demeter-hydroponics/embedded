@@ -28,6 +28,7 @@ class BasePumpDevice {
     virtual ErrorCode get_waterValveCurrent(float& current) = 0;
     virtual ErrorCode controlPump(PumpType pump, bool enable) = 0;
     virtual ErrorCode controlWaterValue(bool enable) = 0;
+    virtual ErrorCode get_solutionReservoirHeightM(float& height) = 0;
 };
 
 class PumpDevice : public BasePumpDevice {
@@ -102,6 +103,14 @@ class PumpDevice : public BasePumpDevice {
      * @return Status of the operation
      */
     ErrorCode get_waterLevelSolutionReservoir(float& level);
+
+    /**
+     * @brief Get the water level in the mixing feed reservoir
+     *
+     * @param level The water level in the mixing feed reservoir
+     * @return Status of the operation
+     */
+    ErrorCode get_solutionReservoirHeightM(float& height) override;
 
     /**
      * @brief Get the water level in the water feed reservoir
