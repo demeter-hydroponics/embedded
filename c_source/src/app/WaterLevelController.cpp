@@ -6,7 +6,7 @@ WaterLevelController::WaterLevelController(BasePumpDevice& pumpDevice) : pumpDev
 }
 
 void WaterLevelController::run() {
-    float solutionReservoirHeightM = 0.0f;
+    float solutionReservoirHeightM = 0.0F;
     const bool heightValid =
         pumpDevice_.get_solutionReservoirHeightM(solutionReservoirHeightM) == BasePumpDevice::ErrorCode::NO_ERROR;
     if (heightValid) {
