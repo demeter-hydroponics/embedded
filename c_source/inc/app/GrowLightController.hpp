@@ -30,7 +30,7 @@ class GrowLightController {
     constexpr static float MAX_PPFD_OUTPUT = 300.0F;
 
     float ppfdReference_ = 0.0F;
-    constexpr static float K_INTEGRAL_PPFD_TO_PPFD = 0.1F;
+    constexpr static float K_PROPORTIONAL_PPFD_TO_DUTY = 1/40.0F;
 
     constexpr static size_t MAX_NUM_GROWLIGHT_SECTIONS = 5U;
     float integral_error[MAX_NUM_GROWLIGHT_SECTIONS] = {0};
