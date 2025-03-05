@@ -11,7 +11,7 @@ void WaterLevelController::run() {
         pumpDevice_.get_solutionReservoirHeightM(solutionReservoirHeightM) == BasePumpDevice::ErrorCode::NO_ERROR;
     if (heightValid) {
         control_utils_hysteresis_controller_run(&solution_reservoir_water_level_hysteresis_data_, solutionReservoirHeightM);
-        pumpDevice_.controlWaterValue(solution_reservoir_water_level_hysteresis_data_.state == false);
+        pumpDevice_.controlWaterValue(solution_reservoir_water_level_hysteresis_data_.state);
     } else {
         pumpDevice_.controlWaterValue(false);
     }
