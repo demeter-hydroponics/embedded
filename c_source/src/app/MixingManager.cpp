@@ -2,8 +2,9 @@
 
 #include <cassert>
 
-MixingManager::MixingManager(BaseMixingDevice& mixingDevice, MessageQueue<SetMixingStateCommand>& mixingStateCommandQueue)
-    : mixingDevice_(mixingDevice), mixingStateCommandQueue_(mixingStateCommandQueue) {}
+MixingManager::MixingManager(BaseMixingDevice& mixingDevice, MessageQueue<SetMixingStateCommand>& mixingStateCommandQueue,
+                             TimeServer& timeServer)
+    : mixingDevice_(mixingDevice), mixingStateCommandQueue_(mixingStateCommandQueue), timeServer_(timeServer) {}
 
 MixingManager::State MixingManager::getState() const { return state_; }
 
@@ -33,7 +34,6 @@ void MixingManager::run() {
 
 MixingManager::State MixingManager::run_init() {
     // init the hysteresis controller
-    assert(control_utils_hysteresis_controller_init(&tds_ppm_controller_data_, &tds_ppm_controller_config_));
 
     return MixingManager::State::MIXING;
 }
@@ -45,12 +45,22 @@ MixingManager::State MixingManager::run_mixing() {
         nextState = MixingManager::State::OVERRIDE;
     }
 
-    float TDS = 0.0F;
-    if (mixingDevice_.get_TDS(TDS) == MixingDevice::ErrorCode::NO_ERROR) {
-        control_utils_hysteresis_controller_run(&tds_ppm_controller_data_, TDS);
+    float tdsPPM = 0.0F;
+    const bool tdsPPMValid = mixingDevice_.get_TDS(tdsPPM) == BaseMixingDevice::ErrorCode::NO_ERROR;
+    utime_t currentTime = 0;
+    timeServer_.getUClockUs(currentTime);
 
-        // invert the hysteresis controller output
-        mixingDevice_.controlNutrientMixingValve(tds_ppm_controller_data_.state == false);
+    const bool tdsBelowThreshold = tdsPPMValid && (tdsPPM < TDS_PPM_HYSTERESIS_LOW_LEVEL_V);
+
+    if ((mixingStateCommandReceived_ == false) && tdsBelowThreshold) {
+        if (currentTime > (mixingStartTime_ + TOTAL_MIXING_PERIOD_US)) {
+            mixingDevice_.controlNutrientMixingValve(true);
+            mixingStartTime_ = currentTime;
+        } else if (currentTime > (mixingStartTime_ + MIXING_TIME_US)) {
+            mixingDevice_.controlNutrientMixingValve(false);
+        } else {
+            mixingDevice_.controlNutrientMixingValve(true);
+        }
     } else {
         mixingDevice_.controlNutrientMixingValve(false);
     }

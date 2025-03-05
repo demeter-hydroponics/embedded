@@ -23,7 +23,8 @@ class MixingManager {
      * @param mixingDevice The mixing device
      * @param mixingStateCommandQueue reference to the mixing state command queue
      */
-    MixingManager(BaseMixingDevice& mixingDevice, MessageQueue<SetMixingStateCommand>& mixingStateCommandQueue);
+    MixingManager(BaseMixingDevice& mixingDevice, MessageQueue<SetMixingStateCommand>& mixingStateCommandQueue,
+                  TimeServer& timeServer);
 
     /**
      * @brief Get the state of the mixing manager
@@ -40,13 +41,17 @@ class MixingManager {
    private:
     BaseMixingDevice& mixingDevice_;
     MessageQueue<SetMixingStateCommand>& mixingStateCommandQueue_;
+    TimeServer& timeServer_;
 
     SetMixingStateCommand mixingStateCommand_ = {};
     bool mixingStateCommandReceived_ = false;
 
-    // TODO: Make the below parameters configurable. Dummy for now
-    control_utils_hysteresis_controller_config_t tds_ppm_controller_config_ = {200.0f, 150.0f};
-    control_utils_hysteresis_controller_data_t tds_ppm_controller_data_ = {false, nullptr};
+    constexpr static utime_t MIXING_DEADTIME_US = 30 * TimeServer::kUtimeUsPerSecond;
+    constexpr static utime_t MIXING_TIME_US = 5 * TimeServer::kUtimeUsPerSecond;
+    constexpr static utime_t TOTAL_MIXING_PERIOD_US = MIXING_DEADTIME_US + MIXING_TIME_US;
+    constexpr static float TDS_PPM_HYSTERESIS_LOW_LEVEL_V = 0.315f;
+
+    utime_t mixingStartTime_ = 0;
 
 #ifdef UNIT_TEST
     State state_ = State::INIT;
