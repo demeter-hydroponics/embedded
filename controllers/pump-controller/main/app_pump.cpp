@@ -120,6 +120,7 @@ void task_10ms_run(void *pvParameters) {
         primaryPump.poll();
         secondaryPump.poll();
         waterValve.poll();
+        mixingFeedReservoirSensor.poll();
 
         pumpDevice.run();
 
@@ -169,15 +170,10 @@ void TOF_init() {
 }
 
 void binary_load_init() {
-    // init the sleep pins to output and set output to high as binary load does not include sleep functionality
-    primaryMotorSleepGPIO.setPinMode(HAL_GPIO::PinMode::OUTPUT);
-    secondaryMotorSleepGPIO.setPinMode(HAL_GPIO::PinMode::OUTPUT);
-    primaryMotorFaultGPIO.writePin(true);
-    secondaryMotorSleepGPIO.writePin(true);
-
     primaryPump.init();
     secondaryPump.init();
     waterValve.init();
+    mixingValve.init();
 }
 
 void app_run() {

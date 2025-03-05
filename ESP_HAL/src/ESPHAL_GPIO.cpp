@@ -42,7 +42,7 @@ ESPHAL_GPIO::ErrorCode ESPHAL_GPIO::writePin(bool value) {
     if (mode_ != PinMode::OUTPUT) {
         errorCode = ErrorCode::INVALID_OPERATION;
     } else {
-        gpio_set_level(pin_, value);
+        ESP_ERROR_CHECK(gpio_set_level(pin_, value));
     }
 
     return errorCode;
