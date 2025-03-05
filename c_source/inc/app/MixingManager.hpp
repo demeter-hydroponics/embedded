@@ -48,7 +48,11 @@ class MixingManager {
     control_utils_hysteresis_controller_config_t tds_ppm_controller_config_ = {200.0f, 150.0f};
     control_utils_hysteresis_controller_data_t tds_ppm_controller_data_ = {false, nullptr};
 
+#ifdef UNIT_TEST
     State state_ = State::INIT;
+#else
+    State state_ = State::OVERRIDE;
+#endif
     State run_init();
     State run_mixing();
 

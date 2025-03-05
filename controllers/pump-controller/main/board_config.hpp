@@ -11,8 +11,8 @@ constexpr bool I2C_MUX_A0_STATE = false;
 constexpr bool I2C_MUX_A1_STATE = false;
 
 constexpr uint8_t TOF_I2C_MUX_CHANNEL_SOLUTION_RESERVOIR = 0;
-constexpr uint8_t TOF_I2C_MUX_CHANNEL_WATER_FEED_RESERVOIR = 1;
-constexpr uint8_t TOF_I2C_MUX_CHANNEL_MIXING_FEED_RESERVOIR = 2;
+constexpr uint8_t TOF_I2C_MUX_CHANNEL_MIXING_FEED_RESERVOIR = 1;
+constexpr uint8_t TOF_I2C_MUX_CHANNEL_WATER_FEED_RESERVOIR = 2;
 
 // https://docs.espressif.com/projects/esp-idf/en/v4.2/esp32/api-reference/peripherals/adc.html
 

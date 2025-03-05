@@ -106,6 +106,8 @@ class BinaryLoad : public BaseBinaryLoad {
      */
     void populateProtobufMessage(BinaryLoadStats& msg) override;
 
+    bool isEnabled() const { return enabled_; }
+
    private:
     HAL_GPIO& en_GPIO_;
     HAL_GPIO* fault_GPIO_;
