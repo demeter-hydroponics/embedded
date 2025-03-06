@@ -49,7 +49,9 @@ PumpManager::PumpManagerState PumpManager::run_init() {
         newState = PumpManagerState::DEBUG;
     } else {
         // TODO: Perhaps a self-check state?
+#ifdef UNIT_TEST
         newState = PumpManagerState::RUNNING_PRIMARY;
+#endif
     }
 
     return newState;
