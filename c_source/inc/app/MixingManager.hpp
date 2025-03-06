@@ -46,10 +46,10 @@ class MixingManager {
     SetMixingStateCommand mixingStateCommand_ = {};
     bool mixingStateCommandReceived_ = false;
 
-    constexpr static utime_t MIXING_DEADTIME_US = 30 * TimeServer::kUtimeUsPerSecond;
-    constexpr static utime_t MIXING_TIME_US = 5 * TimeServer::kUtimeUsPerSecond;
+    constexpr static utime_t MIXING_DEADTIME_US = 45 * TimeServer::kUtimeUsPerSecond;
+    constexpr static utime_t MIXING_TIME_US = 1 * TimeServer::kUtimeUsPerSecond;
     constexpr static utime_t TOTAL_MIXING_PERIOD_US = MIXING_DEADTIME_US + MIXING_TIME_US;
-    constexpr static float TDS_PPM_HYSTERESIS_LOW_LEVEL_V = 0.315f;
+    constexpr static float TDS_PPM_HYSTERESIS_LOW_LEVEL_V = 0.47f;
 
     utime_t mixingStartTime_ = 0;
 
