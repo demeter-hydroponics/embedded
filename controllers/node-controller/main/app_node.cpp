@@ -86,11 +86,11 @@ static const char *uri = WEBSOCKET_URI;
 void task_10ms_run(void *pvParameters) {
     while (1) {
         growLightSection0.run();
-        growLightSection1.run();
+        //growLightSection1.run();
         growLightController.run();
 
         statusLightingManager.run();
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 }
 
@@ -108,11 +108,11 @@ void init_light_sensors() {
     ltr303Exposure exposure = EXPOSURE_100ms;
     bool enableAutoGain = true;
 
-    if (lightSensor0.begin(gain, exposure, enableAutoGain) == false) {
+    if (lightSensor0.begin(gain, exposure, enableAutoGain) != 0U) {
         ESP_LOGE(TAG, "Failed to initialize light sensor 0");
     }
 
-    if (lightSensor1.begin(gain, exposure, enableAutoGain) == false) {
+    if (lightSensor1.begin(gain, exposure, enableAutoGain) != 0U) {
         ESP_LOGE(TAG, "Failed to initialize light sensor 1");
     }
 }
@@ -149,7 +149,7 @@ void app_run() {
 
     adc1.init();
 
-    init_temp_humidity_sensor();
+    //init_temp_humidity_sensor();
     init_light_sensors();
 
     growLightController.setPPFDReference(270.0F);

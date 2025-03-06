@@ -39,11 +39,13 @@ void GrowLightSection::run() {
     msg.header.length = GrowLightSectionStats_size;
     msg.header.timestamp = timestamp;
     GrowLightSectionStats stats;
+
     stats.GrowLightIndex = index_;
     stats.GrowLightMetrics.CurrentValid =
         growLight_.getCurrent(stats.GrowLightMetrics.Current) == BaseGrowLight::ErrorCode::NO_ERROR ? SensorValidity_VALID
                                                                                                     : SensorValidity_INVALID;
     stats.GrowLightMetrics.SetPPFD = growLightSetPPFD_;
+    
     stats.LightSense.SensedPPFD = growLightSensedPPFD_;
     stats.LightSense.Validity =
         lightSensorError_ == BaseLightSensor::ErrorCode::NO_ERROR ? SensorValidity_VALID : SensorValidity_INVALID;
