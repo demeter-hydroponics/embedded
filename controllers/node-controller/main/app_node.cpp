@@ -69,7 +69,7 @@ static GrowLightSection growLightSection0(growLight0, commMessageQueue, lightSen
 static GrowLightSection growLightSection1(growLight1, commMessageQueue, lightSensor1, PPFD_TO_DUTY_CYCLE_GAIN, LUX_TO_PPFD_GAIN,
                                           1U, timeServer);
 
-static BaseGrowLightSection *growLightSections[] = {&growLightSection0, &growLightSection1};
+static BaseGrowLightSection *growLightSections[] = {&growLightSection0};
 static GrowLightController growLightController(timeServer, growLightSections,
                                                sizeof(growLightSections) / sizeof(growLightSections[0]), commMessageQueue,
                                                ppfdCommandQueue);
@@ -86,7 +86,7 @@ static const char *uri = WEBSOCKET_URI;
 void task_10ms_run(void *pvParameters) {
     while (1) {
         growLightSection0.run();
-        growLightSection1.run();
+        // growLightSection1.run();
         growLightController.run();
 
         statusLightingManager.run();
@@ -152,7 +152,7 @@ void app_run() {
     init_temp_humidity_sensor();
     init_light_sensors();
 
-    growLightController.setPPFDReference(270.0F);
+    growLightController.setPPFDReference(150.0F);
 
     while (sntp_get_sync_status() != SNTP_SYNC_STATUS_COMPLETED) {
         ESP_LOGW(TAG, "Waiting for time to be synchronized...");
