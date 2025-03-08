@@ -19,6 +19,7 @@
 #include "StatusLED.hpp"
 #include "StatusLightingManager.hpp"
 #include "TDSSense.hpp"
+#include "WaterFlowSensor.hpp"
 #include "WaterLevelController.hpp"
 #include "WaterLevelSense.hpp"
 #include "board_config.hpp"
@@ -87,8 +88,12 @@ static ESPHAL_GPIO secondaryMotorFaultGPIO((gpio_num_t)GPIO_PIN_MOTOR_2_FAULT);
 static ESPHAL_GPIO secondaryMotorSleepGPIO((gpio_num_t)GPIO_PIN_MOTOR_2_NSLEEP);
 static BinaryLoad secondaryPump(secondaryMotorEnableGPIO, &secondaryMotorFaultGPIO, nullptr, 0, 0.0f);
 
+static ESPHAL_GPIO flowRateSensorGPIO((gpio_num_t)GPIO_PIN_WATER_FLOW_SENSE);
+static HallTach flowRateSensor(0.5F);
+static WaterFlowSensor waterFlowSensor(flowRateSensor, flowRateSensorGPIO, timeServer, (1.0F / 7.5F));
+
 static PumpDevice pumpDevice(timeServer, commMessageQueue, primaryPump, secondaryPump, waterValve, reservoirWaterLevelSensor,
-                             waterFeedReservoirSensor, mixingFeedReservoirSensor);
+                             waterFeedReservoirSensor, mixingFeedReservoirSensor, &waterFlowSensor);
 static PumpManager pumpManager(timeServer, commMessageQueue, pumpStateCommandQueue, pumpDevice);
 
 static MixingManager mixingManager(mixingDevice, mixingStateCommandQueue, timeServer);
@@ -196,6 +201,7 @@ void app_run() {
     // Initialize the I2C
     i2c1.init();
     i2cMux.reset();
+    waterFlowSensor.init();
 
     // Initialize the wifi
     wifi.init();

@@ -5,6 +5,7 @@
 #include "CommManagerTypes.hpp"
 #include "HallTach.hpp"
 #include "MessageQueue.hpp"
+#include "WaterFlowSensor.hpp"
 #include "WaterLevelSense.hpp"
 #include "time.hpp"
 
@@ -43,7 +44,8 @@ class PumpDevice : public BasePumpDevice {
      */
     PumpDevice(TimeServer& timeServer, MessageQueue<CommManagerQueueData_t>& messageQueue, BaseBinaryLoad& primaryPump,
                BaseBinaryLoad& secondaryPump, BaseBinaryLoad& waterValve, BaseWaterLevelSense& solutionReservoirWaterLevel,
-               BaseWaterLevelSense& waterFeedReservoirWaterLevel, BaseWaterLevelSense& mixingFeedReservoirWaterLevel);
+               BaseWaterLevelSense& waterFeedReservoirWaterLevel, BaseWaterLevelSense& mixingFeedReservoirWaterLevel,
+               WaterFlowSensor* waterFlowSensor);
 
     /**
      * @brief Run the pump device
@@ -128,6 +130,7 @@ class PumpDevice : public BasePumpDevice {
     BaseWaterLevelSense& solutionReservoirWaterLevel_;
     BaseWaterLevelSense& waterFeedReservoirWaterLevel_;
     BaseWaterLevelSense& mixingFeedReservoirWaterLevel_;
+    WaterFlowSensor* waterFlowSensor_;
 
     CommManagerQueueData_t commData_;
 };

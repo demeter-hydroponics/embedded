@@ -8,7 +8,7 @@
 PumpDevice::PumpDevice(TimeServer& timeServer, MessageQueue<CommManagerQueueData_t>& messageQueue, BaseBinaryLoad& primaryPump,
                        BaseBinaryLoad& secondaryPump, BaseBinaryLoad& waterValve,
                        BaseWaterLevelSense& solutionReservoirWaterLevel, BaseWaterLevelSense& waterFeedReservoirWaterLevel,
-                       BaseWaterLevelSense& mixingFeedReservoirWaterLevel)
+                       BaseWaterLevelSense& mixingFeedReservoirWaterLevel, WaterFlowSensor* waterFlowSensor)
     : timeServer_(timeServer),
       messageQueue_(messageQueue),
       primaryPump_(primaryPump),
@@ -17,6 +17,7 @@ PumpDevice::PumpDevice(TimeServer& timeServer, MessageQueue<CommManagerQueueData
       solutionReservoirWaterLevel_(solutionReservoirWaterLevel),
       waterFeedReservoirWaterLevel_(waterFeedReservoirWaterLevel),
       mixingFeedReservoirWaterLevel_(mixingFeedReservoirWaterLevel),
+      waterFlowSensor_(waterFlowSensor),
       commData_(CommManagerQueueData_t()) {}
 
 PumpDevice::ErrorCode PumpDevice::run() {
@@ -31,13 +32,21 @@ PumpDevice::ErrorCode PumpDevice::run() {
     pumpTankStats.mixing_reservoir_level.level_valid = static_cast<SensorValidity>(
         mixingFeedReservoirWaterLevel_.getWaterInTankL(pumpTankStats.mixing_reservoir_level.tank_fluid_volume_L));
 
+    if (waterFlowSensor_ != nullptr) {
+        pumpTankStats.flow_rate_stats.flowRateLperM = waterFlowSensor_->getWaterFlowLPerMin();
+        pumpTankStats.flow_rate_stats.floatRateSensorValid = SensorValidity_VALID;
+    } else {
+        pumpTankStats.flow_rate_stats.flowRateLperM = 0.0F;
+        pumpTankStats.flow_rate_stats.floatRateSensorValid = SensorValidity_INVALID;
+    }
+
     commData_.header.channel = MessageChannels_PUMP_STATS;
     IGNORE(timeServer_.getUClockUs(commData_.header.timestamp));
-    commData_.header.length = PumpTankStats_size;
 
     uint8_t* buffer = static_cast<uint8_t*>(commData_.data);
     pb_ostream_t ostream = pb_ostream_from_buffer(buffer, PumpTankStats_size);
     IGNORE(pb_encode(&ostream, PumpTankStats_fields, &pumpTankStats));
+    commData_.header.length = static_cast<uint32_t>(ostream.bytes_written);
 
     IGNORE(messageQueue_.send(commData_));
 
