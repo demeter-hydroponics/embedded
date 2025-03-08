@@ -13,7 +13,7 @@ TEST(CommManagerTest, TestCommManagerPollEmptyQueue) {
     MockTransportLayer transport_layer;
     MockMessageQueue<CommManagerQueueData_t> message_queue;
     MockMessageQueue<SetPumpStateCommand> set_pump_state_command_queue;
-    CommManager comm_manager(transport_layer, message_queue, &set_pump_state_command_queue, nullptr, nullptr);
+    CommManager comm_manager(transport_layer, message_queue, &set_pump_state_command_queue, nullptr, nullptr, nullptr);
 
     EXPECT_CALL(transport_layer, send).Times(0);
     EXPECT_CALL(message_queue, receive).Times(1);
@@ -25,7 +25,7 @@ TEST(CommManagerTest, TestCommManagerPollQueue) {
     MockTransportLayer transport_layer;
     MockMessageQueue<CommManagerQueueData_t> message_queue;
     MockMessageQueue<SetPumpStateCommand> set_pump_state_command_queue;
-    CommManager comm_manager(transport_layer, message_queue, &set_pump_state_command_queue, nullptr, nullptr);
+    CommManager comm_manager(transport_layer, message_queue, &set_pump_state_command_queue, nullptr, nullptr, nullptr);
 
     CommManagerQueueData_t data;
     data.header.channel = MessageChannels_MIXING_STATS;
@@ -61,7 +61,7 @@ TEST(CommManagerTest, MultipleElementsInQueue) {
     MockTransportLayer transport_layer;
     MockMessageQueue<CommManagerQueueData_t> message_queue;
     MockMessageQueue<SetPumpStateCommand> set_pump_state_command_queue;
-    CommManager comm_manager(transport_layer, message_queue, &set_pump_state_command_queue, nullptr, nullptr);
+    CommManager comm_manager(transport_layer, message_queue, &set_pump_state_command_queue, nullptr, nullptr, nullptr);
 
     CommManagerQueueData_t data1;
     data1.header.channel = MessageChannels_MIXING_STATS;
@@ -114,7 +114,7 @@ TEST(CommManagerTest, receive_and_marshall_pump_command) {
     MockTransportLayer transport_layer;
     MockMessageQueue<CommManagerQueueData_t> message_queue;
     MockMessageQueue<SetPumpStateCommand> set_pump_state_command_queue;
-    CommManager comm_manager(transport_layer, message_queue, &set_pump_state_command_queue, nullptr, nullptr);
+    CommManager comm_manager(transport_layer, message_queue, &set_pump_state_command_queue, nullptr, nullptr, nullptr);
 
     uint8_t frame[MessageHeader_size + SetPumpStateCommand_size] = {0};
     pb_ostream_t ostream = pb_ostream_from_buffer(frame, sizeof(frame));

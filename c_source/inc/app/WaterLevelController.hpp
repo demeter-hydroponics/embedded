@@ -1,16 +1,22 @@
 #ifndef WATER_LEVEL_CONTROLLER_HPP
 #define WATER_LEVEL_CONTROLLER_HPP
 
+#include "MessageQueue.hpp"
 #include "PumpDevice.hpp"
+#include "column/commands.pb.h"
 #include "hysteresis_controller.h"
-
 class WaterLevelController {
    public:
-    WaterLevelController(BasePumpDevice& pumpDevice);
+    WaterLevelController(BasePumpDevice& pumpDevice, MessageQueue<SetWaterLevelControllerStateCommand>& WaterLevelController);
     void run();
 
    private:
     BasePumpDevice& pumpDevice_;
+    MessageQueue<SetWaterLevelControllerStateCommand>& waterLevelControllerStateCommandQueue_;
+
+    MixingOverrideState waterLevelControllerState_ = MixingOverrideState_OVERRIDE_VALVE_OFF;
+
+    void run_no_override();
 
     constexpr static float SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_LOW_LEVEL_M = 0.1f;
     constexpr static float SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_HIGH_LEVEL_M = 0.15f;

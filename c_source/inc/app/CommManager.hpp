@@ -22,7 +22,8 @@ class CommManager {
     CommManager(TransportLayer& transport_layer, MessageQueue<CommManagerQueueData_t>& send_message_queue,
                 MessageQueue<SetPumpStateCommand>* set_pump_state_command_queue,
                 MessageQueue<SetPPFDReferenceCommand>* ppfd_command_queue,
-                MessageQueue<SetMixingStateCommand>* set_mixing_state_command_queue);
+                MessageQueue<SetMixingStateCommand>* set_mixing_state_command_queue,
+                MessageQueue<SetWaterLevelControllerStateCommand>* water_level_controller_state_command_queue);
 
     /**
      * @brief Run the communication manager
@@ -39,6 +40,7 @@ class CommManager {
     MessageQueue<SetPumpStateCommand>* set_pump_state_command_queue_;
     MessageQueue<SetPPFDReferenceCommand>* ppfd_command_queue_;
     MessageQueue<SetMixingStateCommand>* set_mixing_state_command_queue_;
+    MessageQueue<SetWaterLevelControllerStateCommand>* water_level_controller_state_command_queue_;
 
     void send_packet();
 
