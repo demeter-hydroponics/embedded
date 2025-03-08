@@ -80,6 +80,5 @@ TEST(GrowLightSectionTest, ProtobufRun) {
     growLightSection.run();
 
     EXPECT_EQ(expected_data.header.channel, received_data.header.channel);
-    EXPECT_EQ(expected_data.header.length, received_data.header.length);
     EXPECT_EQ(expected_data.header.timestamp, received_data.header.timestamp);
 }

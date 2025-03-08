@@ -36,7 +36,6 @@ void GrowLightSection::run() {
 
     CommManagerQueueData_t msg;
     msg.header.channel = MessageChannels_GROW_LIGHT_METRICS;
-    msg.header.length = GrowLightSectionStats_size;
     msg.header.timestamp = timestamp;
     GrowLightSectionStats stats;
     stats.GrowLightIndex = index_;
@@ -52,6 +51,7 @@ void GrowLightSection::run() {
     uint8_t* buffer = static_cast<uint8_t*>(msg.data);
     pb_ostream_t ostream = pb_ostream_from_buffer(buffer, GrowLightSectionStats_size);
     IGNORE(pb_encode(&ostream, GrowLightSectionStats_fields, &stats));
+    msg.header.length = static_cast<uint32_t>(ostream.bytes_written);
     msgQueue_.send(msg);
 }
 
