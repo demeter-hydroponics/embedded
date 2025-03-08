@@ -86,7 +86,7 @@ static const char *uri = WEBSOCKET_URI;
 void task_10ms_run(void *pvParameters) {
     while (1) {
         growLightSection0.run();
-        // growLightSection1.run();
+        growLightSection1.run();
         growLightController.run();
 
         statusLightingManager.run();
