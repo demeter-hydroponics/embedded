@@ -152,7 +152,7 @@ void app_run() {
     init_temp_humidity_sensor();
     init_light_sensors();
 
-    growLightController.setPPFDReference(150.0F);
+    growLightController.setPPFDReference(0.0F);
 
     while (sntp_get_sync_status() != SNTP_SYNC_STATUS_COMPLETED) {
         ESP_LOGW(TAG, "Waiting for time to be synchronized...");

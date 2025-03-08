@@ -16,8 +16,11 @@ constexpr uint8_t TOF_I2C_MUX_CHANNEL_WATER_FEED_RESERVOIR = 2;
 
 // https://docs.espressif.com/projects/esp-idf/en/v4.2/esp32/api-reference/peripherals/adc.html
 
-constexpr uint8_t ADC_CHANNEL_PH_SENSE = 0;   // GPIO 36
-constexpr uint8_t ADC_CHANNEL_TDS_SENSE = 2;  // GPIO 38
+constexpr uint8_t ADC_CHANNEL_PH_SENSE = 0;         // GPIO 36
+constexpr uint8_t ADC_CHANNEL_TDS_SENSE = 2;        // GPIO 38
+constexpr uint8_t ADC_CHANNEL_MOTOR_1_CURRENT = 3;  // GPIO 39
+constexpr uint8_t ADC_CHANNEL_VALVE_CURR_1_IN = 7;  // GPIO 35
+constexpr uint8_t ADC_CHANNEL_VALVE_CURR_2_IN = 4;  // GPIO 32
 
 constexpr uint8_t GPIO_PIN_MOTOR_1_FAULT = 27;
 constexpr uint8_t GPIO_PIN_MOTOR_1_EN = 12;

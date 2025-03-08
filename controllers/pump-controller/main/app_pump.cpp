@@ -63,8 +63,7 @@ static WaterLevelSenseFromTOF reservoirWaterLevelSensor(solutionReservoirTOF, 1.
 static WaterLevelSenseFromTOF waterFeedReservoirSensor(waterFeedReservoirTOF, 1.0f, 0.0f);
 static WaterLevelSenseFromTOF mixingFeedReservoirSensor(mixingFeedReservoirTOF, 1.0f, 0.0f);
 
-static uint8_t active_channels[] = {ADC_CHANNEL_PH_SENSE,
-                                    ADC_CHANNEL_TDS_SENSE};  // Channel 1 for the pH sensor, Channel 2 for the TDS sensor
+static uint8_t active_channels[] = {ADC_CHANNEL_PH_SENSE, ADC_CHANNEL_TDS_SENSE};
 static ESPHAL_ADC adc1(ADC_UNIT_1, active_channels, sizeof(active_channels) / sizeof(active_channels[0]));
 
 static pHSense pH(adc1, ADC_CHANNEL_PH_SENSE, 1.0f, 0.0f);
