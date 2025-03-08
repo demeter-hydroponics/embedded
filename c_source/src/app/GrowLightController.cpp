@@ -33,7 +33,7 @@ void GrowLightController::run() {
         if (growLightSection->getSensedPPFD(sensed_ppfd) == BaseGrowLightSection::ErrorCode::NO_ERROR) {
             const float error = ppfdReference_ - sensed_ppfd;
             float output_ppfd = error * K_PROPORTIONAL_PPFD_TO_DUTY;
-            output_ppfd = CONTROL_UTILS_CLAMP(output_ppfd, 0.0F, 1.0F);
+            output_ppfd = CONTROL_UTILS_CLAMP(output_ppfd, 0.0F, 0.7F);
             growLightSection->setOutputPPFD(output_ppfd);
         }
     }

@@ -1,7 +1,6 @@
 #include "HallTach.hpp"
 
 #include "time.hpp"
-
 HallTach::HallTach(float min_freq)
     : lastEdge_(HallTach::TachEdge::RISING),
       lastTime_(0),
@@ -11,7 +10,8 @@ HallTach::HallTach(float min_freq)
 
 HallTach::State HallTach::logHallTachToggle(HallTach::TachEdge edge, utime_t time) {
     constexpr float us_to_s = 1.0F / 1000000.0F;
-    const float dt_s = (static_cast<float>(time) - static_cast<float>(lastTime_)) * us_to_s;
+    const int64_t dt_us = (static_cast<int64_t>(time) - static_cast<int64_t>(lastTime_));
+    const float dt_s = static_cast<float>(dt_us) * us_to_s;
 
     switch (state_) {
         case State::NOT_VALID_UNINITIALIZED:
@@ -54,7 +54,7 @@ HallTach::State HallTach::logHallTachToggle(HallTach::TachEdge edge, utime_t tim
     return state_;
 }
 
-HallTach::State HallTach::getFrequency(float &frequency, utime_t currentTime) {
+HallTach::State HallTach::getFrequency(float& frequency, utime_t currentTime) {
     constexpr float us_to_s = 1.0F / 1000000.0F;
     const float dt_s = (static_cast<float>(currentTime) - static_cast<float>(lastTime_)) * us_to_s;
     const bool illegal_dt = dt_s < 0.0F;

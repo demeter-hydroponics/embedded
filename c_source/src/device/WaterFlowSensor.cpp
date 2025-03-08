@@ -25,6 +25,8 @@ float WaterFlowSensor::getWaterFlowLPerMin() {
     float frequency = 0.0F;
     utime_t current_time = 0U;
     timeServer_.getUClockUs(current_time);
-    hall_tach_.getFrequency(frequency, current_time);
+    if (hall_tach_.getFrequency(frequency, current_time) != HallTach::State::VALID) {
+        return 0.0F;
+    }
     return frequency * conversion_factor_;
 }

@@ -89,7 +89,7 @@ static ESPHAL_GPIO secondaryMotorSleepGPIO((gpio_num_t)GPIO_PIN_MOTOR_2_NSLEEP);
 static BinaryLoad secondaryPump(secondaryMotorEnableGPIO, &secondaryMotorFaultGPIO, nullptr, 0, 0.0f);
 
 static ESPHAL_GPIO flowRateSensorGPIO((gpio_num_t)GPIO_PIN_WATER_FLOW_SENSE);
-static HallTach flowRateSensor(0.5F);
+static HallTach flowRateSensor(0.1F);
 static WaterFlowSensor waterFlowSensor(flowRateSensor, flowRateSensorGPIO, timeServer, (1.0F / 7.5F));
 
 static PumpDevice pumpDevice(timeServer, commMessageQueue, primaryPump, secondaryPump, waterValve, reservoirWaterLevelSensor,
@@ -128,7 +128,7 @@ void task_10ms_run(void *pvParameters) {
         secondaryPump.poll();
         waterValve.poll();
         mixingFeedReservoirSensor.poll();
-
+        waterFlowSensor.poll();
         pumpDevice.run();
 
         pH.poll();
