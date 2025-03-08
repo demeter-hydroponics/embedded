@@ -27,7 +27,7 @@ static ESPHAL_Wifi wifi;
 static ESPHAL_Websocket websocket;
 static ESPHAL_MessageQueue<CommManagerQueueData_t, 50> commMessageQueue;
 static ESPHAL_MessageQueue<SetPPFDReferenceCommand, 1U> ppfdCommandQueue;
-static CommManager commManager(websocket, commMessageQueue, nullptr, &ppfdCommandQueue, nullptr);
+static CommManager commManager(websocket, commMessageQueue, nullptr, &ppfdCommandQueue, nullptr, nullptr);
 
 static const i2c_master_bus_config_t i2c_bus_0_config = {
     .i2c_port = I2C_NUM_0,
@@ -69,7 +69,7 @@ static GrowLightSection growLightSection0(growLight0, commMessageQueue, lightSen
 static GrowLightSection growLightSection1(growLight1, commMessageQueue, lightSensor1, PPFD_TO_DUTY_CYCLE_GAIN, LUX_TO_PPFD_GAIN,
                                           1U, timeServer);
 
-static BaseGrowLightSection *growLightSections[] = {&growLightSection0};
+static BaseGrowLightSection *growLightSections[] = {&growLightSection0, &growLightSection1};
 static GrowLightController growLightController(timeServer, growLightSections,
                                                sizeof(growLightSections) / sizeof(growLightSections[0]), commMessageQueue,
                                                ppfdCommandQueue);
@@ -108,11 +108,11 @@ void init_light_sensors() {
     ltr303Exposure exposure = EXPOSURE_100ms;
     bool enableAutoGain = true;
 
-    if (lightSensor0.begin(gain, exposure, enableAutoGain) == false) {
+    if (lightSensor0.begin(gain, exposure, enableAutoGain) != 0U) {
         ESP_LOGE(TAG, "Failed to initialize light sensor 0");
     }
 
-    if (lightSensor1.begin(gain, exposure, enableAutoGain) == false) {
+    if (lightSensor1.begin(gain, exposure, enableAutoGain) != 0U) {
         ESP_LOGE(TAG, "Failed to initialize light sensor 1");
     }
 }
