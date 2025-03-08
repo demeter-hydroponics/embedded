@@ -10,6 +10,9 @@ class WaterLevelController {
     WaterLevelController(BasePumpDevice& pumpDevice, MessageQueue<SetWaterLevelControllerStateCommand>& WaterLevelController);
     void run();
 
+    constexpr static float SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_HIGH_LEVEL_M = 0.06f;
+    constexpr static float SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_LOW_LEVEL_M = 0.08f;
+
    private:
     BasePumpDevice& pumpDevice_;
     MessageQueue<SetWaterLevelControllerStateCommand>& waterLevelControllerStateCommandQueue_;
@@ -18,11 +21,8 @@ class WaterLevelController {
 
     void run_no_override();
 
-    constexpr static float SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_LOW_LEVEL_M = 0.1f;
-    constexpr static float SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_HIGH_LEVEL_M = 0.15f;
-
     control_utils_hysteresis_controller_config_t solution_reservoir_water_level_hysteresis_config_ = {
-        SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_HIGH_LEVEL_M, SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_LOW_LEVEL_M};
+        SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_LOW_LEVEL_M, SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_HIGH_LEVEL_M};
 
     control_utils_hysteresis_controller_data_t solution_reservoir_water_level_hysteresis_data_ = {false, nullptr};
 };
