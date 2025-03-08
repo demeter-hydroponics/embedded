@@ -42,12 +42,16 @@ class CommManager {
 
     void send_packet();
 
+    void reset_buffer();
+
     bool process_message(MessageChannels channel, uint8_t* buf, size_t len);
 
     constexpr static size_t TOTAL_PACKET_BUFFER_SIZE = sizeof(CommManagerQueueData_t) * COMM_MANAGER_MAX_MESSAGES_IN_PACKET;
 
     uint8_t packet_buffer[TOTAL_PACKET_BUFFER_SIZE] = {0};
     size_t bytes_written_to_packet_ = 0;
+    uint8_t packet_buffer_downsample_index = 0;
+    constexpr static uint8_t PACKET_BUFFER_DOWNSAMPLE_FACTOR = 10;
 };
 
 #endif  // COMM_MANAGER_HPP

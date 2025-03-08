@@ -86,7 +86,16 @@ void CommManager::run() {
     }
 
     if (bytes_written_to_packet_ > 0) {
-        send_packet();
+#ifndef UNIT_TEST
+        const bool should_send_packet_after_downsample = (packet_buffer_downsample_index % PACKET_BUFFER_DOWNSAMPLE_FACTOR == 0);
+
+        if (should_send_packet_after_downsample)
+#endif
+        {
+            send_packet();
+        }
+
+        packet_buffer_downsample_index++;
     }
 
     uint8_t commandBuffer[CommManager::COMM_MANAGER_MAX_RX_PACKET_SIZE] = {0};
@@ -117,6 +126,10 @@ void CommManager::run() {
 
 void CommManager::send_packet() {
     transport_layer_.send(static_cast<uint8_t*>(packet_buffer), bytes_written_to_packet_);
+    reset_buffer();
+}
+
+void CommManager::reset_buffer() {
     memset(static_cast<uint8_t*>(packet_buffer), 0, sizeof(packet_buffer));
     bytes_written_to_packet_ = 0;
 }
