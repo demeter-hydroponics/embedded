@@ -11,15 +11,19 @@ WaterLevelSenseFromTOF::WaterLevelSenseFromTOF(BaseTOF& tof, float scale, float 
 void WaterLevelSenseFromTOF::poll() {
     float distance = 0.0F;
     if (tof_.get_distance_m(distance) == BaseTOF::ErrorCode::NO_ERROR) {
-        const float rawWaterLevel = distance * scale_ + offset_;
+        rawWaterLevel_ = distance * scale_ + offset_;
         if (lpf_enabled_) {
-            control_utils_lpf_step(&lpf_, rawWaterLevel);
+            control_utils_lpf_step(&lpf_, rawWaterLevel_);
             waterLevel_ = lpf_.output;
         } else {
-            waterLevel_ = rawWaterLevel;
+            waterLevel_ = rawWaterLevel_;
         }
         result_valid_ = true;
     } else {
+        if (lpf_enabled_) {
+            control_utils_lpf_step(&lpf_, rawWaterLevel_);
+            waterLevel_ = lpf_.output;
+        }
         result_valid_ = false;
     }
 }

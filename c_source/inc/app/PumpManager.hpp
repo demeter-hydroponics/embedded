@@ -3,6 +3,7 @@
 #include "CommManager.hpp"
 #include "MessageQueue.hpp"
 #include "PumpDevice.hpp"
+#include "WaterLevelController.hpp"
 #include "column/commands.pb.h"
 #include "time.hpp"
 
@@ -15,7 +16,8 @@ class PumpManager {
     };
 
     PumpManager(TimeServer& timeServer, MessageQueue<CommManagerQueueData_t>& commMessageQueue,
-                MessageQueue<SetPumpStateCommand>& pumpStateCommandQueue, BasePumpDevice& pumpDevice);
+                MessageQueue<SetPumpStateCommand>& pumpStateCommandQueue, BasePumpDevice& pumpDevice,
+                WaterLevelController* waterLevelController = nullptr);
 
     void run();
 
@@ -26,7 +28,8 @@ class PumpManager {
     MessageQueue<CommManagerQueueData_t>& commMessageQueue_;
     MessageQueue<SetPumpStateCommand>& pumpStateCommandQueue_;
     BasePumpDevice& pumpDevice_;
-
+    WaterLevelController* waterLevelController_ = nullptr;
+    bool okToRunPump_ = true;
     bool pumpStateCommandReceived_ = false;
     SetPumpStateCommand pumpStateCommand_ = {};
 

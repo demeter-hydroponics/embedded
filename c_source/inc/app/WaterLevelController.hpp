@@ -10,12 +10,17 @@ class WaterLevelController {
     WaterLevelController(BasePumpDevice& pumpDevice, MessageQueue<SetWaterLevelControllerStateCommand>& WaterLevelController);
     void run();
 
-    constexpr static float SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_HIGH_LEVEL_M = 0.06f;
-    constexpr static float SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_LOW_LEVEL_M = 0.08f;
+    constexpr static float SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_HIGH_LEVEL_M = 0.065f;
+    constexpr static float SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_LOW_LEVEL_M = 0.10f;
+
+    constexpr static float SOLUTION_RESERVOIR_OK_TO_RUN_IF_WATER_HEIGHT_LESS_THAN_M = 0.10f;
+
+    bool okayToRunPump();
 
    private:
     BasePumpDevice& pumpDevice_;
     MessageQueue<SetWaterLevelControllerStateCommand>& waterLevelControllerStateCommandQueue_;
+    float solutionReservoirHeightM_ = 0.0F;
 
     MixingOverrideState waterLevelControllerState_ = MixingOverrideState_OVERRIDE_VALVE_OFF;
 

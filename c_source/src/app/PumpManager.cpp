@@ -1,17 +1,25 @@
 #include "PumpManager.hpp"
 
 PumpManager::PumpManager(TimeServer& timeServer, MessageQueue<CommManagerQueueData_t>& commMessageQueue,
-                         MessageQueue<SetPumpStateCommand>& pumpStateCommandQueue, BasePumpDevice& pumpDevice)
+                         MessageQueue<SetPumpStateCommand>& pumpStateCommandQueue, BasePumpDevice& pumpDevice,
+                         WaterLevelController* waterLevelController)
     : timeServer_(timeServer),
       commMessageQueue_(commMessageQueue),
       pumpStateCommandQueue_(pumpStateCommandQueue),
-      pumpDevice_(pumpDevice) {}
+      pumpDevice_(pumpDevice),
+      waterLevelController_(waterLevelController) {}
 
 PumpManager::PumpManagerState PumpManager::getState() { return state_; }
 
 void PumpManager::processInputs() {
     if (pumpStateCommandQueue_.receive(pumpStateCommand_)) {
         pumpStateCommandReceived_ = true;
+    }
+
+    if (waterLevelController_ != nullptr) {
+        okToRunPump_ = waterLevelController_->okayToRunPump();
+    } else {
+        okToRunPump_ = true;
     }
 }
 
@@ -63,7 +71,8 @@ void PumpManager::onenter_debug() {
 
 PumpManager::PumpManagerState PumpManager::run_debug() {
     if (pumpStateCommandReceived_) {
-        const bool pumpState = pumpStateCommand_.State == PumpState::PumpState_PUMP_ON;
+        bool pumpState = pumpStateCommand_.State == PumpState::PumpState_PUMP_ON;
+        pumpState &= okToRunPump_;
 
         switch (pumpStateCommand_.SelectedPump) {
             case PumpType::PumpType_PRIMARY:

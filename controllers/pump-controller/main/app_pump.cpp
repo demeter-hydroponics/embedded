@@ -61,7 +61,7 @@ static VL53L0X solutionReservoirTOF(solutionI2cBus, timeServer);
 static VL53L0X waterFeedReservoirTOF(waterFeedI2cBus, timeServer);
 static VL53L0X mixingFeedReservoirTOF(mixingFeedI2cBus, timeServer);
 
-constexpr float WATER_LEVEL_TOF_LPF_FC = 1.0F;
+constexpr float WATER_LEVEL_TOF_LPF_FC = 0.1F;
 constexpr float WATER_LEVEL_TOF_LPF_DT = 0.010F;
 
 static WaterLevelSenseFromTOF reservoirWaterLevelSensor(solutionReservoirTOF, 1.0f, 0.0f, WATER_LEVEL_TOF_LPF_FC,
@@ -162,8 +162,10 @@ void task_50ms_run(void *pvParameters) {
 }
 
 void TOF_init() {
+    constexpr uint32_t TOF_MEASUREMENT_TIMING_BUDGET_US = 66000U;
     if (solutionReservoirTOF.init()) {
         ESP_LOGI(TAG, "TOF sensor for solution reservoir initialized");
+        solutionReservoirTOF.setMeasurementTimingBudget(TOF_MEASUREMENT_TIMING_BUDGET_US);
         solutionReservoirTOF.startContinuous();
     } else {
         ESP_LOGE(TAG, "Failed to initialize TOF sensor for solution reservoir");
@@ -171,6 +173,7 @@ void TOF_init() {
 
     if (waterFeedReservoirTOF.init()) {
         ESP_LOGI(TAG, "TOF sensor for water feed reservoir initialized");
+        waterFeedReservoirTOF.setMeasurementTimingBudget(TOF_MEASUREMENT_TIMING_BUDGET_US);
         waterFeedReservoirTOF.startContinuous();
     } else {
         ESP_LOGE(TAG, "Failed to initialize TOF sensor for water feed reservoir");
@@ -178,6 +181,7 @@ void TOF_init() {
 
     if (mixingFeedReservoirTOF.init()) {
         ESP_LOGI(TAG, "TOF sensor for mixing feed reservoir initialized");
+        mixingFeedReservoirTOF.setMeasurementTimingBudget(TOF_MEASUREMENT_TIMING_BUDGET_US);
         mixingFeedReservoirTOF.startContinuous();
     } else {
         ESP_LOGE(TAG, "Failed to initialize TOF sensor for mixing feed reservoir");

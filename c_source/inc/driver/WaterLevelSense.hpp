@@ -34,6 +34,7 @@ class WaterLevelSenseFromTOF : public BaseWaterLevelSense {
     float offset_;
 
     float waterLevel_ = 0.0F;
+    float rawWaterLevel_ = 0.0F;
 
     control_utils_lpf_t lpf_ = {};
     bool lpf_enabled_ = false;
