@@ -2,6 +2,7 @@
 #define WATER_LEVEL_SENSE_HPP
 
 #include "TOF.hpp"
+#include "low_pass_filter.h"
 
 class BaseWaterLevelSense {
    public:
@@ -18,7 +19,7 @@ class BaseWaterLevelSense {
 
 class WaterLevelSenseFromTOF : public BaseWaterLevelSense {
    public:
-    WaterLevelSenseFromTOF(BaseTOF& tof, float scale, float offset);
+    WaterLevelSenseFromTOF(BaseTOF& tof, float scale, float offset, float lpf_fc = 0.0F, float dt = 0.0F);
 
     void poll();
 
@@ -28,10 +29,14 @@ class WaterLevelSenseFromTOF : public BaseWaterLevelSense {
 
    private:
     BaseTOF& tof_;
-    float waterLevel_;
 
     float scale_;
     float offset_;
+
+    float waterLevel_ = 0.0F;
+
+    control_utils_lpf_t lpf_ = {};
+    bool lpf_enabled_ = false;
 
     bool result_valid_ = false;
 };

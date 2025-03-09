@@ -61,9 +61,15 @@ static VL53L0X solutionReservoirTOF(solutionI2cBus, timeServer);
 static VL53L0X waterFeedReservoirTOF(waterFeedI2cBus, timeServer);
 static VL53L0X mixingFeedReservoirTOF(mixingFeedI2cBus, timeServer);
 
-static WaterLevelSenseFromTOF reservoirWaterLevelSensor(solutionReservoirTOF, 1.0f, 0.0f);
-static WaterLevelSenseFromTOF waterFeedReservoirSensor(waterFeedReservoirTOF, 1.0f, 0.0f);
-static WaterLevelSenseFromTOF mixingFeedReservoirSensor(mixingFeedReservoirTOF, 1.0f, 0.0f);
+constexpr float WATER_LEVEL_TOF_LPF_FC = 1.0F;
+constexpr float WATER_LEVEL_TOF_LPF_DT = 0.010F;
+
+static WaterLevelSenseFromTOF reservoirWaterLevelSensor(solutionReservoirTOF, 1.0f, 0.0f, WATER_LEVEL_TOF_LPF_FC,
+                                                        WATER_LEVEL_TOF_LPF_DT);
+static WaterLevelSenseFromTOF waterFeedReservoirSensor(waterFeedReservoirTOF, 1.0f, 0.0f, WATER_LEVEL_TOF_LPF_FC,
+                                                       WATER_LEVEL_TOF_LPF_DT);
+static WaterLevelSenseFromTOF mixingFeedReservoirSensor(mixingFeedReservoirTOF, 1.0f, 0.0f, WATER_LEVEL_TOF_LPF_FC,
+                                                        WATER_LEVEL_TOF_LPF_DT);
 
 static uint8_t active_channels[] = {ADC_CHANNEL_PH_SENSE, ADC_CHANNEL_TDS_SENSE};
 static ESPHAL_ADC adc1(ADC_UNIT_1, active_channels, sizeof(active_channels) / sizeof(active_channels[0]));
