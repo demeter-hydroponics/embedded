@@ -5,7 +5,7 @@ WaterLevelController::WaterLevelController(
     : pumpDevice_(pumpDevice), waterLevelControllerStateCommandQueue_(waterLevelControllerStateCommandQueue) {
     control_utils_hysteresis_controller_init(&solution_reservoir_water_level_hysteresis_data_,
                                              &solution_reservoir_water_level_hysteresis_config_);
-    solution_reservoir_water_level_hysteresis_data_.state = true;  // default to hysteresis making the valve open
+    solution_reservoir_water_level_hysteresis_data_.state = false;
 }
 
 void WaterLevelController::run_no_override() {

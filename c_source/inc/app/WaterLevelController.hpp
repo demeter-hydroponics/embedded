@@ -20,7 +20,8 @@ class WaterLevelController {
    private:
     BasePumpDevice& pumpDevice_;
     MessageQueue<SetWaterLevelControllerStateCommand>& waterLevelControllerStateCommandQueue_;
-    float solutionReservoirHeightM_ = 0.0F;
+    float solutionReservoirHeightM_ =
+        (SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_HIGH_LEVEL_M + SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_LOW_LEVEL_M) / 2.0f;
 
     MixingOverrideState waterLevelControllerState_ = MixingOverrideState_OVERRIDE_VALVE_OFF;
 

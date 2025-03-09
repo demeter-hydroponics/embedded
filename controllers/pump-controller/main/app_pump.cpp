@@ -71,7 +71,7 @@ static WaterLevelSenseFromTOF waterFeedReservoirSensor(waterFeedReservoirTOF, 1.
 static WaterLevelSenseFromTOF mixingFeedReservoirSensor(mixingFeedReservoirTOF, 1.0f, 0.0f, WATER_LEVEL_TOF_LPF_FC,
                                                         WATER_LEVEL_TOF_LPF_DT);
 
-static uint8_t active_channels[] = {ADC_CHANNEL_PH_SENSE, ADC_CHANNEL_TDS_SENSE};
+static uint8_t active_channels[] = {ADC_CHANNEL_PH_SENSE, ADC_CHANNEL_TDS_SENSE, ADC_CHANNEL_MOTOR_1_CURRENT};
 static ESPHAL_ADC adc1(ADC_UNIT_1, active_channels, sizeof(active_channels) / sizeof(active_channels[0]));
 
 static pHSense pH(adc1, ADC_CHANNEL_PH_SENSE, 1.0f, 0.0f);
@@ -88,7 +88,9 @@ static MixingDevice mixingDevice(timeServer, pH, &tds, commMessageQueue, &mixing
 static ESPHAL_GPIO primaryMotorEnableGPIO((gpio_num_t)GPIO_PIN_MOTOR_1_EN);
 static ESPHAL_GPIO primaryMotorFaultGPIO((gpio_num_t)GPIO_PIN_MOTOR_1_FAULT);
 static ESPHAL_GPIO primaryMotorSleepGPIO((gpio_num_t)GPIO_PIN_MOTOR_1_NSLEEP);
-static BinaryLoad primaryPump(primaryMotorEnableGPIO, &primaryMotorFaultGPIO, nullptr, 0, 0.0f);
+constexpr float PRIMARY_MOTOR_CURRENT_SCALE = 1 / (1430.0F * 450.0F * 1e-6F);
+static BinaryLoad primaryPump(primaryMotorEnableGPIO, &primaryMotorFaultGPIO, &adc1, ADC_CHANNEL_MOTOR_1_CURRENT,
+                              PRIMARY_MOTOR_CURRENT_SCALE);
 
 static ESPHAL_GPIO secondaryMotorEnableGPIO((gpio_num_t)GPIO_PIN_MOTOR_2_EN);
 static ESPHAL_GPIO secondaryMotorFaultGPIO((gpio_num_t)GPIO_PIN_MOTOR_2_FAULT);
@@ -101,10 +103,10 @@ static WaterFlowSensor waterFlowSensor(flowRateSensor, flowRateSensorGPIO, timeS
 
 static PumpDevice pumpDevice(timeServer, commMessageQueue, primaryPump, secondaryPump, waterValve, reservoirWaterLevelSensor,
                              waterFeedReservoirSensor, mixingFeedReservoirSensor, &waterFlowSensor);
-static PumpManager pumpManager(timeServer, commMessageQueue, pumpStateCommandQueue, pumpDevice);
 
 static MixingManager mixingManager(mixingDevice, mixingStateCommandQueue, timeServer);
 static WaterLevelController waterLevelController(pumpDevice, waterLevelControllerStateCommandQueue);
+static PumpManager pumpManager(timeServer, commMessageQueue, pumpStateCommandQueue, pumpDevice, &waterLevelController);
 
 #ifdef USE_PWM_STATUS_LED
 static uint8_t ledc_channel_to_gpio_map[] = {
