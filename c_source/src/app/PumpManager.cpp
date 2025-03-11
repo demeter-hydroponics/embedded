@@ -70,32 +70,29 @@ void PumpManager::onenter_debug() {
 }
 
 PumpManager::PumpManagerState PumpManager::run_debug() {
-    if (pumpStateCommandReceived_) {
-        bool pumpState = pumpStateCommand_.State == PumpState::PumpState_PUMP_ON;
-        pumpState &= okToRunPump_;
+    bool pumpState = pumpStateCommand_.State == PumpState::PumpState_PUMP_ON;
+    pumpState &= okToRunPump_;
 
-        switch (pumpStateCommand_.SelectedPump) {
-            case PumpType::PumpType_PRIMARY:
-                pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_PRIMARY, pumpState);
-                pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_SECONDARY, false);
-                break;
-            case PumpType::PumpType_SECONDARY:
-                pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_SECONDARY, pumpState);
-                pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_PRIMARY, false);
-                break;
-            case PumpType::PumpType_BOTH:
-                pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_PRIMARY, pumpState);
-                pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_SECONDARY, pumpState);
-                break;
-            default:
-                pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_PRIMARY, false);
-                pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_SECONDARY, false);
-                break;
-        }
-
-        pumpStateCommandReceived_ = false;
+    switch (pumpStateCommand_.SelectedPump) {
+        case PumpType::PumpType_PRIMARY:
+            pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_PRIMARY, pumpState);
+            pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_SECONDARY, false);
+            break;
+        case PumpType::PumpType_SECONDARY:
+            pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_SECONDARY, pumpState);
+            pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_PRIMARY, false);
+            break;
+        case PumpType::PumpType_BOTH:
+            pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_PRIMARY, pumpState);
+            pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_SECONDARY, pumpState);
+            break;
+        default:
+            pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_PRIMARY, false);
+            pumpDevice_.controlPump(BasePumpDevice::PumpType::PUMP_SECONDARY, false);
+            break;
     }
 
+    pumpStateCommandReceived_ = false;
     return PumpManagerState::DEBUG;
 }
 

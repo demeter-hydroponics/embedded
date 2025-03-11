@@ -13,7 +13,8 @@ class WaterLevelController {
     constexpr static float SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_HIGH_LEVEL_M = 0.065f;
     constexpr static float SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_LOW_LEVEL_M = 0.08f;
 
-    constexpr static float SOLUTION_RESERVOIR_OK_TO_RUN_IF_WATER_HEIGHT_LESS_THAN_M = 0.085F;
+    constexpr static float SOLUTION_RESERVOIR_OK_TO_RUN_IF_WATER_HEIGHT_LESS_THAN_M_HYSTERESIS_UPPER = 0.075F;
+    constexpr static float SOLUTION_RESERVOIR_OK_TO_RUN_IF_WATER_HEIGHT_LESS_THAN_M_HYSTERESIS_LOWER = 0.085F;
 
     bool okayToRunPump();
 
@@ -30,7 +31,14 @@ class WaterLevelController {
     control_utils_hysteresis_controller_config_t solution_reservoir_water_level_hysteresis_config_ = {
         SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_LOW_LEVEL_M, SOLUTION_RESERVOIR_WATER_LEVEL_HYSTERESIS_HIGH_LEVEL_M};
 
+    control_utils_hysteresis_controller_config_t solution_reservoir_pump_ok_to_run_hysteresis_config_ = {
+        SOLUTION_RESERVOIR_OK_TO_RUN_IF_WATER_HEIGHT_LESS_THAN_M_HYSTERESIS_UPPER,
+        SOLUTION_RESERVOIR_OK_TO_RUN_IF_WATER_HEIGHT_LESS_THAN_M_HYSTERESIS_LOWER};
+
     control_utils_hysteresis_controller_data_t solution_reservoir_water_level_hysteresis_data_ = {false, nullptr};
+    control_utils_hysteresis_controller_data_t solution_reservoir_pump_ok_to_run_hysteresis_data_ = {false, nullptr};
+
+    bool okayToRunPump_ = true;
 };
 
 #endif  // WATER_LEVEL_CONTROLLER_HPP

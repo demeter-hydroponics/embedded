@@ -6,6 +6,9 @@ WaterLevelController::WaterLevelController(
     control_utils_hysteresis_controller_init(&solution_reservoir_water_level_hysteresis_data_,
                                              &solution_reservoir_water_level_hysteresis_config_);
     solution_reservoir_water_level_hysteresis_data_.state = false;
+    control_utils_hysteresis_controller_init(&solution_reservoir_pump_ok_to_run_hysteresis_data_,
+                                             &solution_reservoir_pump_ok_to_run_hysteresis_config_);
+    solution_reservoir_pump_ok_to_run_hysteresis_data_.state = false;
 }
 
 void WaterLevelController::run_no_override() {
@@ -42,23 +45,26 @@ void WaterLevelController::run() {
         default:
             break;
     }
-}
-
-bool WaterLevelController::okayToRunPump() {
-    bool okayToRun = true;
 
     switch (waterLevelControllerState_) {
         case MixingOverrideState_NO_OVERRIDE:
-            okayToRun = solutionReservoirHeightM_ < SOLUTION_RESERVOIR_OK_TO_RUN_IF_WATER_HEIGHT_LESS_THAN_M;
+            if (okayToRunPump_ &&
+                (solutionReservoirHeightM_ > SOLUTION_RESERVOIR_OK_TO_RUN_IF_WATER_HEIGHT_LESS_THAN_M_HYSTERESIS_LOWER)) {
+                okayToRunPump_ = false;
+            } else if (solutionReservoirHeightM_ < SOLUTION_RESERVOIR_OK_TO_RUN_IF_WATER_HEIGHT_LESS_THAN_M_HYSTERESIS_UPPER) {
+                okayToRunPump_ = true;
+            } else {
+                // do nothing
+            }
             break;
         case MixingOverrideState_OVERRIDE_VALVE_ON:
         case MixingOverrideState_OVERRIDE_VALVE_OFF:
-            okayToRun = true;
+            okayToRunPump_ = true;
             break;
         default:
-            okayToRun = false;
+            okayToRunPump_ = false;
             break;
     }
-
-    return okayToRun;
 }
+
+bool WaterLevelController::okayToRunPump() { return okayToRunPump_; }
