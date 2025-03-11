@@ -1,4 +1,12 @@
 #include "WaterLevelController.hpp"
+#ifndef UNIT_TEST
+#define LOG_DEBUG
+#endif
+
+#ifdef LOG_DEBUG
+#include "esp_log.h"
+static const char* TAG = "WaterLevelController";
+#endif
 
 WaterLevelController::WaterLevelController(
     BasePumpDevice& pumpDevice, MessageQueue<SetWaterLevelControllerStateCommand>& waterLevelControllerStateCommandQueue)
@@ -58,12 +66,15 @@ void WaterLevelController::run() {
             }
             break;
         case MixingOverrideState_OVERRIDE_VALVE_ON:
-        case MixingOverrideState_OVERRIDE_VALVE_OFF:
+        case MixingOverrideState_OVERRIDE_VALVE_OFF: {
             okayToRunPump_ = true;
-            break;
-        default:
-            okayToRunPump_ = false;
-            break;
+        } break;
+        default: {
+#ifdef LOG_DEBUG
+            ESP_LOGE(TAG, "Invalid state: %d", static_cast<int>(waterLevelControllerState_));
+#endif
+            okayToRunPump_ = true;
+        } break;
     }
 }
 
