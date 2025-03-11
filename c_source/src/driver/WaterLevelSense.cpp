@@ -14,16 +14,16 @@ void WaterLevelSenseFromTOF::poll() {
         rawWaterLevel_ = distance * scale_ + offset_;
         waterLevel_ = rawWaterLevel_;
         if (lpf_enabled_) {
-            // control_utils_lpf_step(&lpf_, rawWaterLevel_);
-            // waterLevel_ = lpf_.output;
+            control_utils_lpf_step(&lpf_, rawWaterLevel_);
+            waterLevel_ = lpf_.output;
         } else {
-            // waterLevel_ = rawWaterLevel_;
+            waterLevel_ = rawWaterLevel_;
         }
         result_valid_ = true;
     } else {
         if (lpf_enabled_) {
-            // control_utils_lpf_step(&lpf_, rawWaterLevel_);
-            // waterLevel_ = lpf_.output;
+            control_utils_lpf_step(&lpf_, rawWaterLevel_);
+            waterLevel_ = lpf_.output;
         }
         result_valid_ = false;
     }

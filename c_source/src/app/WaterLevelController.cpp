@@ -9,12 +9,14 @@ WaterLevelController::WaterLevelController(
 }
 
 void WaterLevelController::run_no_override() {
-    const bool heightValid =
-        pumpDevice_.get_solutionReservoirHeightM(solutionReservoirHeightM_) == BasePumpDevice::ErrorCode::NO_ERROR;
+    float waterLevelHeight = 0.0F;
+    const bool heightValid = pumpDevice_.get_solutionReservoirHeightM(waterLevelHeight) == BasePumpDevice::ErrorCode::NO_ERROR;
     if (heightValid) {
+        solutionReservoirHeightM_ = waterLevelHeight;
         control_utils_hysteresis_controller_run(&solution_reservoir_water_level_hysteresis_data_, solutionReservoirHeightM_);
         pumpDevice_.controlWaterValue(solution_reservoir_water_level_hysteresis_data_.state);
     } else {
+        solutionReservoirHeightM_ = 8.19F;
         pumpDevice_.controlWaterValue(false);
     }
 }
@@ -31,9 +33,11 @@ void WaterLevelController::run() {
             break;
         case MixingOverrideState_OVERRIDE_VALVE_ON:
             pumpDevice_.controlWaterValue(true);
+            solution_reservoir_water_level_hysteresis_data_.state = true;
             break;
         case MixingOverrideState_OVERRIDE_VALVE_OFF:
             pumpDevice_.controlWaterValue(false);
+            solution_reservoir_water_level_hysteresis_data_.state = false;
             break;
         default:
             break;

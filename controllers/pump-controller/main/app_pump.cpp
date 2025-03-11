@@ -61,7 +61,7 @@ static VL53L0X solutionReservoirTOF(solutionI2cBus, timeServer);
 static VL53L0X waterFeedReservoirTOF(waterFeedI2cBus, timeServer);
 static VL53L0X mixingFeedReservoirTOF(mixingFeedI2cBus, timeServer);
 
-constexpr float WATER_LEVEL_TOF_LPF_FC = 0.1F;
+constexpr float WATER_LEVEL_TOF_LPF_FC = 1.0F;
 constexpr float WATER_LEVEL_TOF_LPF_DT = 0.010F;
 
 static WaterLevelSenseFromTOF reservoirWaterLevelSensor(solutionReservoirTOF, 1.0f, 0.0f, WATER_LEVEL_TOF_LPF_FC,
