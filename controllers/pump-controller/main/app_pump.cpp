@@ -226,10 +226,10 @@ void app_run() {
 
     ESP_LOGI(TAG, "HW initialized");
 
-    while (sntp_get_sync_status() != SNTP_SYNC_STATUS_COMPLETED) {
-        ESP_LOGW(TAG, "Waiting for time to be synchronized...");
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
+    // while (sntp_get_sync_status() != SNTP_SYNC_STATUS_COMPLETED) {
+    //     ESP_LOGW(TAG, "Waiting for time to be synchronized...");
+    //     vTaskDelay(1000 / portTICK_PERIOD_MS);
+    // }
 
     utime_t uclock;
     timeServer.getUClockUs(uclock);
